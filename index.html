@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Frank Consulting Service — AI-Powered Software Solutions</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -25,12 +25,16 @@
     html { scroll-behavior: smooth; }
 
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Inter', 'Noto Sans SC', sans-serif;
       background: var(--bg-primary);
       color: var(--text-primary);
       line-height: 1.6;
       overflow-x: hidden;
     }
+
+    /* ── Language toggle ── */
+    [lang="en"] [data-zh],
+    [lang="zh"] [data-en] { display: none !important; }
 
     /* ── Animated Background ── */
     .bg-grid {
@@ -57,6 +61,7 @@
       border-bottom: 1px solid var(--border);
       display: flex; align-items: center; justify-content: space-between;
     }
+    .nav-left { display: flex; align-items: center; gap: 2.5rem; }
     .logo {
       font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em;
       background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
@@ -67,6 +72,20 @@
       font-weight: 500; transition: color 0.3s;
     }
     .nav-links a:hover { color: var(--accent); }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .lang-toggle {
+      display: flex; align-items: center; border-radius: 9999px;
+      overflow: hidden; border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+    }
+    .lang-btn {
+      padding: 0.35rem 0.9rem; font-size: 0.78rem; font-weight: 600;
+      border: none; background: transparent; color: var(--text-secondary);
+      cursor: pointer; transition: all 0.3s;
+    }
+    .lang-btn.active {
+      background: var(--gradient); color: #fff;
+    }
     .nav-cta {
       padding: 0.5rem 1.4rem; border-radius: 9999px; font-size: 0.85rem;
       font-weight: 600; background: var(--gradient); color: #fff;
@@ -276,37 +295,83 @@
 
   <!-- Navigation -->
   <nav>
-    <div class="logo">Frank Consulting</div>
-    <ul class="nav-links">
-      <li><a href="#services">Services</a></li>
-      <li><a href="#ai-tools">AI Tools</a></li>
-      <li><a href="#about">About</a></li>
-      <li><a href="#contact">Contact</a></li>
-    </ul>
-    <a href="#contact" class="nav-cta">Book a Call →</a>
-    <button class="mobile-toggle" onclick="document.querySelector('nav').classList.toggle('open')">☰</button>
+    <div class="nav-left">
+      <div class="logo">Frank Consulting</div>
+      <ul class="nav-links">
+        <li>
+          <a href="#services" data-en>Services</a>
+          <a href="#services" data-zh>服务</a>
+        </li>
+        <li>
+          <a href="#ai-tools" data-en>AI Tools</a>
+          <a href="#ai-tools" data-zh>AI 工具</a>
+        </li>
+        <li>
+          <a href="#about" data-en>About</a>
+          <a href="#about" data-zh>关于</a>
+        </li>
+        <li>
+          <a href="#contact" data-en>Contact</a>
+          <a href="#contact" data-zh>联系</a>
+        </li>
+      </ul>
+    </div>
+    <div class="nav-right">
+      <div class="lang-toggle">
+        <button class="lang-btn active" onclick="switchLang('en')">EN</button>
+        <button class="lang-btn" onclick="switchLang('zh')">中文</button>
+      </div>
+      <a href="#contact" class="nav-cta" data-en>Book a Call &rarr;</a>
+      <a href="#contact" class="nav-cta" data-zh>预约咨询 &rarr;</a>
+      <button class="mobile-toggle" onclick="document.querySelector('nav').classList.toggle('open')">&#9776;</button>
+    </div>
   </nav>
 
   <!-- ════════════════ HERO ════════════════ -->
   <section id="hero">
     <div class="container">
-      <div class="hero-badge"><span class="dot"></span> AI-Powered Consulting</div>
-      <h1 class="hero-title">
-        Build Smarter with<br /><span>AI Software Tools</span>
-      </h1>
-      <p class="hero-sub">
-        We help businesses harness the power of artificial intelligence — from custom AI integrations and intelligent automation to full-scale software solutions that drive real results.
-      </p>
-      <div class="hero-btns">
-        <a href="#contact" class="btn-primary">Get Started ↗</a>
-        <a href="#services" class="btn-secondary">Explore Services</a>
+      <!-- EN -->
+      <div data-en>
+        <div class="hero-badge"><span class="dot"></span> AI-Powered Consulting</div>
+        <h1 class="hero-title">Build Smarter with<br /><span>AI Software Tools</span></h1>
+        <p class="hero-sub">We help businesses harness the power of artificial intelligence &mdash; from custom AI integrations and intelligent automation to full-scale software solutions that drive real results.</p>
+        <div class="hero-btns">
+          <a href="#contact" class="btn-primary">Get Started &nearr;</a>
+          <a href="#services" class="btn-secondary">Explore Services</a>
+        </div>
+      </div>
+      <!-- ZH -->
+      <div data-zh>
+        <div class="hero-badge"><span class="dot"></span> AI 驱动咨询</div>
+        <h1 class="hero-title">用 <span>AI 软件工具</span><br />构建更智能的未来</h1>
+        <p class="hero-sub">我们帮助企业充分利用人工智能的力量 &mdash; 从定制化 AI 集成、智能自动化到全方位软件解决方案，驱动真实业务成果。</p>
+        <div class="hero-btns">
+          <a href="#contact" class="btn-primary">立即开始 &nearr;</a>
+          <a href="#services" class="btn-secondary">探索服务</a>
+        </div>
       </div>
 
       <div class="stats">
-        <div><div class="stat-num">50+</div><div class="stat-label">Projects Delivered</div></div>
-        <div><div class="stat-num">98%</div><div class="stat-label">Client Satisfaction</div></div>
-        <div><div class="stat-num">12+</div><div class="stat-label">AI Tools Built</div></div>
-        <div><div class="stat-num">24/7</div><div class="stat-label">Support Available</div></div>
+        <div>
+          <div class="stat-num">50+</div>
+          <div class="stat-label" data-en>Projects Delivered</div>
+          <div class="stat-label" data-zh>已交付项目</div>
+        </div>
+        <div>
+          <div class="stat-num">98%</div>
+          <div class="stat-label" data-en>Client Satisfaction</div>
+          <div class="stat-label" data-zh>客户满意度</div>
+        </div>
+        <div>
+          <div class="stat-num">12+</div>
+          <div class="stat-label" data-en>AI Tools Built</div>
+          <div class="stat-label" data-zh>已构建 AI 工具</div>
+        </div>
+        <div>
+          <div class="stat-num">24/7</div>
+          <div class="stat-label" data-en>Support Available</div>
+          <div class="stat-label" data-zh>全天候支持</div>
+        </div>
       </div>
     </div>
   </section>
@@ -314,41 +379,54 @@
   <!-- ════════════════ SERVICES ════════════════ -->
   <section id="services">
     <div class="container">
-      <div class="section-label fade-up">What We Offer</div>
-      <h2 class="section-title fade-up">Consulting <span>Services</span></h2>
-      <p class="fade-up" style="color:var(--text-secondary); max-width:600px; margin-bottom:1rem;">
-        End-to-end AI consulting — from strategy and prototyping to deployment and optimization.
-      </p>
+      <div class="section-label fade-up" data-en>What We Offer</div>
+      <div class="section-label fade-up" data-zh>我们的服务</div>
+      <h2 class="section-title fade-up" data-en>Consulting <span>Services</span></h2>
+      <h2 class="section-title fade-up" data-zh>咨询<span>服务</span></h2>
+      <p class="fade-up" style="color:var(--text-secondary); max-width:600px; margin-bottom:1rem;" data-en>End-to-end AI consulting &mdash; from strategy and prototyping to deployment and optimization.</p>
+      <p class="fade-up" style="color:var(--text-secondary); max-width:600px; margin-bottom:1rem;" data-zh>端到端 AI 咨询 &mdash; 从战略规划和原型设计到部署和优化，全程覆盖。</p>
       <div class="services-grid">
         <div class="service-card fade-up">
-          <div class="service-icon">🧠</div>
-          <h3>AI Strategy &amp; Roadmap</h3>
-          <p>Identify high-impact AI opportunities within your business and build a clear implementation roadmap aligned with your goals.</p>
+          <div class="service-icon">&#129504;</div>
+          <h3 data-en>AI Strategy &amp; Roadmap</h3>
+          <h3 data-zh>AI 战略与路线图</h3>
+          <p data-en>Identify high-impact AI opportunities within your business and build a clear implementation roadmap aligned with your goals.</p>
+          <p data-zh>发现企业中高价值的 AI 机会，制定与业务目标一致的清晰实施路线图。</p>
         </div>
         <div class="service-card fade-up">
-          <div class="service-icon">⚙️</div>
-          <h3>Custom AI Development</h3>
-          <p>Design and build bespoke AI models, pipelines, and software tools tailored to your unique workflows and data.</p>
+          <div class="service-icon">&#9881;&#65039;</div>
+          <h3 data-en>Custom AI Development</h3>
+          <h3 data-zh>定制 AI 开发</h3>
+          <p data-en>Design and build bespoke AI models, pipelines, and software tools tailored to your unique workflows and data.</p>
+          <p data-zh>设计和构建定制化 AI 模型、数据流水线和软件工具，完全适配您的独特工作流程和数据。</p>
         </div>
         <div class="service-card fade-up">
-          <div class="service-icon">🔗</div>
-          <h3>System Integration</h3>
-          <p>Seamlessly embed AI capabilities into your existing tech stack — CRMs, ERPs, cloud platforms, and more.</p>
+          <div class="service-icon">&#128279;</div>
+          <h3 data-en>System Integration</h3>
+          <h3 data-zh>系统集成</h3>
+          <p data-en>Seamlessly embed AI capabilities into your existing tech stack &mdash; CRMs, ERPs, cloud platforms, and more.</p>
+          <p data-zh>将 AI 能力无缝集成到您现有的技术栈中 &mdash; CRM、ERP、云平台等。</p>
         </div>
         <div class="service-card fade-up">
-          <div class="service-icon">📊</div>
-          <h3>Data &amp; Analytics</h3>
-          <p>Transform raw data into actionable intelligence with automated reporting, dashboards, and predictive analytics.</p>
+          <div class="service-icon">&#128202;</div>
+          <h3 data-en>Data &amp; Analytics</h3>
+          <h3 data-zh>数据与分析</h3>
+          <p data-en>Transform raw data into actionable intelligence with automated reporting, dashboards, and predictive analytics.</p>
+          <p data-zh>通过自动化报告、仪表盘和预测分析，将原始数据转化为可操作的商业洞察。</p>
         </div>
         <div class="service-card fade-up">
-          <div class="service-icon">🤖</div>
-          <h3>Intelligent Automation</h3>
-          <p>Automate repetitive tasks with AI-driven workflows — from document processing to customer support bots.</p>
+          <div class="service-icon">&#129302;</div>
+          <h3 data-en>Intelligent Automation</h3>
+          <h3 data-zh>智能自动化</h3>
+          <p data-en>Automate repetitive tasks with AI-driven workflows &mdash; from document processing to customer support bots.</p>
+          <p data-zh>利用 AI 驱动的工作流自动化重复性任务 &mdash; 从文档处理到客户支持机器人。</p>
         </div>
         <div class="service-card fade-up">
-          <div class="service-icon">🛡️</div>
-          <h3>AI Audit &amp; Optimization</h3>
-          <p>Evaluate your existing AI systems for performance, fairness, and cost-efficiency — then optimize for better outcomes.</p>
+          <div class="service-icon">&#128737;&#65039;</div>
+          <h3 data-en>AI Audit &amp; Optimization</h3>
+          <h3 data-zh>AI 审计与优化</h3>
+          <p data-en>Evaluate your existing AI systems for performance, fairness, and cost-efficiency &mdash; then optimize for better outcomes.</p>
+          <p data-zh>评估现有 AI 系统的性能、公平性和成本效率，并进行优化以获得更好的结果。</p>
         </div>
       </div>
     </div>
@@ -357,47 +435,65 @@
   <!-- ════════════════ AI TOOLS ════════════════ -->
   <section id="ai-tools">
     <div class="container">
-      <div class="section-label fade-up">Our Products</div>
-      <h2 class="section-title fade-up">AI-Powered <span>Online Tools</span></h2>
-      <p class="fade-up" style="color:var(--text-secondary); max-width:600px; margin-bottom:1rem;">
-        Ready-to-use AI tools you can access online — built to solve real business problems out of the box.
-      </p>
+      <div class="section-label fade-up" data-en>Our Products</div>
+      <div class="section-label fade-up" data-zh>我们的产品</div>
+      <h2 class="section-title fade-up" data-en>AI-Powered <span>Online Tools</span></h2>
+      <h2 class="section-title fade-up" data-zh>AI 驱动的<span>在线工具</span></h2>
+      <p class="fade-up" style="color:var(--text-secondary); max-width:600px; margin-bottom:1rem;" data-en>Ready-to-use AI tools you can access online &mdash; built to solve real business problems out of the box.</p>
+      <p class="fade-up" style="color:var(--text-secondary); max-width:600px; margin-bottom:1rem;" data-zh>开箱即用的在线 AI 工具 &mdash; 专为解决真实业务问题而打造。</p>
       <div class="tools-grid">
         <div class="tool-card fade-up">
-          <div class="tool-icon">💬</div>
-          <h3>AI Chat Assistant</h3>
-          <p>A customizable conversational AI for customer support, onboarding, and internal Q&amp;A.</p>
+          <div class="tool-icon">&#128172;</div>
+          <h3 data-en>AI Chat Assistant</h3>
+          <h3 data-zh>AI 聊天助手</h3>
+          <p data-en>A customizable conversational AI for customer support, onboarding, and internal Q&amp;A.</p>
+          <p data-zh>可定制的对话式 AI，适用于客户支持、新员工培训和内部问答。</p>
           <span class="tool-tag">NLP</span>
         </div>
         <div class="tool-card fade-up">
-          <div class="tool-icon">📄</div>
-          <h3>Smart Document Processor</h3>
-          <p>Extract, classify, and summarize content from PDFs, invoices, and contracts in seconds.</p>
-          <span class="tool-tag">Document AI</span>
+          <div class="tool-icon">&#128196;</div>
+          <h3 data-en>Smart Document Processor</h3>
+          <h3 data-zh>智能文档处理器</h3>
+          <p data-en>Extract, classify, and summarize content from PDFs, invoices, and contracts in seconds.</p>
+          <p data-zh>在数秒内从 PDF、发票和合同中提取、分类和摘要内容。</p>
+          <span class="tool-tag" data-en>Document AI</span>
+          <span class="tool-tag" data-zh>文档 AI</span>
         </div>
         <div class="tool-card fade-up">
-          <div class="tool-icon">🔍</div>
-          <h3>Predictive Analytics Engine</h3>
-          <p>Forecast sales, churn, and demand with ML models trained on your historical data.</p>
-          <span class="tool-tag">Machine Learning</span>
+          <div class="tool-icon">&#128269;</div>
+          <h3 data-en>Predictive Analytics Engine</h3>
+          <h3 data-zh>预测分析引擎</h3>
+          <p data-en>Forecast sales, churn, and demand with ML models trained on your historical data.</p>
+          <p data-zh>使用基于历史数据训练的机器学习模型预测销售、客户流失和需求。</p>
+          <span class="tool-tag" data-en>Machine Learning</span>
+          <span class="tool-tag" data-zh>机器学习</span>
         </div>
         <div class="tool-card fade-up">
-          <div class="tool-icon">🖼️</div>
-          <h3>Image &amp; Vision AI</h3>
-          <p>Automated image recognition, quality inspection, and visual content generation.</p>
-          <span class="tool-tag">Computer Vision</span>
+          <div class="tool-icon">&#128444;&#65039;</div>
+          <h3 data-en>Image &amp; Vision AI</h3>
+          <h3 data-zh>图像与视觉 AI</h3>
+          <p data-en>Automated image recognition, quality inspection, and visual content generation.</p>
+          <p data-zh>自动化图像识别、质量检测和视觉内容生成。</p>
+          <span class="tool-tag" data-en>Computer Vision</span>
+          <span class="tool-tag" data-zh>计算机视觉</span>
         </div>
         <div class="tool-card fade-up">
-          <div class="tool-icon">📝</div>
-          <h3>Content Generator</h3>
-          <p>Generate marketing copy, product descriptions, and reports with AI writing assistance.</p>
-          <span class="tool-tag">Generative AI</span>
+          <div class="tool-icon">&#128221;</div>
+          <h3 data-en>Content Generator</h3>
+          <h3 data-zh>内容生成器</h3>
+          <p data-en>Generate marketing copy, product descriptions, and reports with AI writing assistance.</p>
+          <p data-zh>借助 AI 写作助手生成营销文案、产品描述和报告。</p>
+          <span class="tool-tag" data-en>Generative AI</span>
+          <span class="tool-tag" data-zh>生成式 AI</span>
         </div>
         <div class="tool-card fade-up">
-          <div class="tool-icon">📡</div>
-          <h3>Real-Time Data Monitor</h3>
-          <p>AI-powered anomaly detection and alerting across your live data streams and dashboards.</p>
-          <span class="tool-tag">Streaming AI</span>
+          <div class="tool-icon">&#128225;</div>
+          <h3 data-en>Real-Time Data Monitor</h3>
+          <h3 data-zh>实时数据监控</h3>
+          <p data-en>AI-powered anomaly detection and alerting across your live data streams and dashboards.</p>
+          <p data-zh>AI 驱动的异常检测和告警，覆盖您的实时数据流和仪表盘。</p>
+          <span class="tool-tag" data-en>Streaming AI</span>
+          <span class="tool-tag" data-zh>流式 AI</span>
         </div>
       </div>
     </div>
@@ -406,26 +502,33 @@
   <!-- ════════════════ ABOUT ════════════════ -->
   <section id="about">
     <div class="container">
-      <div class="section-label fade-up">About Me</div>
-      <h2 class="section-title fade-up">Hi, I'm <span>Frank</span></h2>
+      <div class="section-label fade-up" data-en>About Me</div>
+      <div class="section-label fade-up" data-zh>关于我</div>
+      <h2 class="section-title fade-up" data-en>Hi, I'm <span>Frank</span></h2>
+      <h2 class="section-title fade-up" data-zh>你好，我是 <span>Frank</span></h2>
       <div class="about-grid">
-        <div class="about-photo fade-up">👤</div>
+        <div class="about-photo fade-up">&#128100;</div>
         <div class="about-text fade-up">
-          <p>
-            I'm an AI consultant and software engineer with years of experience helping companies — from startups to enterprises — leverage artificial intelligence to solve real business problems.
-          </p>
-          <p>
-            My approach combines deep technical expertise with a practical, results-driven mindset. I don't just build AI for the sake of it — I build AI that moves the needle for your business.
-          </p>
-          <p>
-            Whether you need a custom machine learning pipeline, an intelligent automation tool, or strategic guidance on your AI roadmap, I'm here to help you every step of the way.
-          </p>
-          <div class="about-highlights">
+          <p data-en>I'm an AI consultant and software engineer with years of experience helping companies &mdash; from startups to enterprises &mdash; leverage artificial intelligence to solve real business problems.</p>
+          <p data-zh>我是一名 AI 顾问和软件工程师，拥有多年帮助企业（从初创公司到大型企业）利用人工智能解决实际业务问题的经验。</p>
+          <p data-en>My approach combines deep technical expertise with a practical, results-driven mindset. I don't just build AI for the sake of it &mdash; I build AI that moves the needle for your business.</p>
+          <p data-zh>我的方法将深厚的技术专长与务实、结果导向的思维相结合。我不为了 AI 而做 AI &mdash; 我构建的是能真正推动业务增长的 AI。</p>
+          <p data-en>Whether you need a custom machine learning pipeline, an intelligent automation tool, or strategic guidance on your AI roadmap, I'm here to help you every step of the way.</p>
+          <p data-zh>无论您需要定制机器学习流水线、智能自动化工具，还是 AI 路线图的战略指导，我都将全程为您提供帮助。</p>
+          <div class="about-highlights" data-en>
             <span class="highlight-tag">Machine Learning</span>
             <span class="highlight-tag">LLMs &amp; NLP</span>
             <span class="highlight-tag">Computer Vision</span>
             <span class="highlight-tag">Cloud Architecture</span>
             <span class="highlight-tag">Data Engineering</span>
+            <span class="highlight-tag">MLOps</span>
+          </div>
+          <div class="about-highlights" data-zh>
+            <span class="highlight-tag">机器学习</span>
+            <span class="highlight-tag">大语言模型与 NLP</span>
+            <span class="highlight-tag">计算机视觉</span>
+            <span class="highlight-tag">云架构</span>
+            <span class="highlight-tag">数据工程</span>
             <span class="highlight-tag">MLOps</span>
           </div>
         </div>
@@ -436,35 +539,59 @@
   <!-- ════════════════ CONTACT ════════════════ -->
   <section id="contact">
     <div class="container">
-      <div class="section-label fade-up">Get In Touch</div>
-      <h2 class="section-title fade-up">Let's <span>Work Together</span></h2>
+      <div class="section-label fade-up" data-en>Get In Touch</div>
+      <div class="section-label fade-up" data-zh>联系我们</div>
+      <h2 class="section-title fade-up" data-en>Let's <span>Work Together</span></h2>
+      <h2 class="section-title fade-up" data-zh>让我们<span>合作共赢</span></h2>
       <div class="contact-grid">
         <div class="contact-info fade-up">
-          <h3>Ready to bring AI into your business?</h3>
-          <p>
-            Book a free discovery call and let's explore how AI-powered tools can save you time, cut costs, and unlock new opportunities.
-          </p>
+          <h3 data-en>Ready to bring AI into your business?</h3>
+          <h3 data-zh>准备好将 AI 引入您的业务了吗？</h3>
+          <p data-en>Book a free discovery call and let's explore how AI-powered tools can save you time, cut costs, and unlock new opportunities.</p>
+          <p data-zh>预约免费咨询，一起探索 AI 工具如何帮助您节省时间、降低成本并释放新机遇。</p>
           <div class="contact-item">
-            <div class="contact-item-icon">✉️</div>
-            <div class="contact-item-text"><strong>Email</strong>frank@frankconsulting.com</div>
+            <div class="contact-item-icon">&#9993;&#65039;</div>
+            <div class="contact-item-text">
+              <strong data-en>Email</strong><strong data-zh>邮箱</strong>
+              frank@frankconsulting.com
+            </div>
           </div>
           <div class="contact-item">
-            <div class="contact-item-icon">📞</div>
-            <div class="contact-item-text"><strong>Phone</strong>+1 (555) 000-0000</div>
+            <div class="contact-item-icon">&#128222;</div>
+            <div class="contact-item-text">
+              <strong data-en>Phone</strong><strong data-zh>电话</strong>
+              +1 (555) 000-0000
+            </div>
           </div>
           <div class="contact-item">
-            <div class="contact-item-icon">📍</div>
-            <div class="contact-item-text"><strong>Location</strong>Available Worldwide (Remote)</div>
+            <div class="contact-item-icon">&#128205;</div>
+            <div class="contact-item-text">
+              <strong data-en>Location</strong><strong data-zh>地点</strong>
+              <span data-en>Available Worldwide (Remote)</span>
+              <span data-zh>全球远程服务</span>
+            </div>
           </div>
         </div>
-        <form class="contact-form fade-up" onsubmit="event.preventDefault(); alert('Thank you! Your message has been sent. I\'ll get back to you shortly.');">
+
+        <!-- EN Form -->
+        <form class="contact-form fade-up" data-en onsubmit="event.preventDefault(); alert('Thank you! Your message has been sent. I\'ll get back to you shortly.');">
           <div class="form-row">
             <input type="text" placeholder="Your Name" required />
             <input type="email" placeholder="Your Email" required />
           </div>
           <input type="text" placeholder="Subject" />
           <textarea placeholder="Tell me about your project or idea..."></textarea>
-          <button type="submit">Send Message →</button>
+          <button type="submit">Send Message &rarr;</button>
+        </form>
+        <!-- ZH Form -->
+        <form class="contact-form fade-up" data-zh onsubmit="event.preventDefault(); alert('感谢您！您的消息已发送，我会尽快回复您。');">
+          <div class="form-row">
+            <input type="text" placeholder="您的姓名" required />
+            <input type="email" placeholder="您的邮箱" required />
+          </div>
+          <input type="text" placeholder="主题" />
+          <textarea placeholder="告诉我您的项目或想法..."></textarea>
+          <button type="submit">发送消息 &rarr;</button>
         </form>
       </div>
     </div>
@@ -472,11 +599,23 @@
 
   <!-- Footer -->
   <footer>
-    <p>&copy; 2026 Frank Consulting Service. All rights reserved. | <a href="#hero">Back to top ↑</a></p>
+    <p data-en>&copy; 2026 Frank Consulting Service. All rights reserved. | <a href="#hero">Back to top &uarr;</a></p>
+    <p data-zh>&copy; 2026 Frank Consulting Service 版权所有 | <a href="#hero">回到顶部 &uarr;</a></p>
   </footer>
 
-  <!-- Scroll Animations -->
+  <!-- Scripts -->
   <script>
+    // Language Switcher
+    function switchLang(lang) {
+      document.documentElement.lang = lang;
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.trim() === (lang === 'en' ? 'EN' : '中文'));
+      });
+      // Re-observe elements for animations
+      document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+    }
+
+    // Scroll Animations
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
     }, { threshold: 0.12 });

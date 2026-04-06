@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Frank Consulting Service — AI-Powered Software Solutions</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-card: #1a1a28;
+      --accent: #00d4ff;
+      --accent-glow: rgba(0, 212, 255, 0.25);
+      --accent2: #7b61ff;
+      --accent2-glow: rgba(123, 97, 255, 0.25);
+      --text-primary: #f0f0f5;
+      --text-secondary: #a0a0b8;
+      --border: rgba(255, 255, 255, 0.06);
+      --gradient: linear-gradient(135deg, #00d4ff, #7b61ff);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── Animated Background ── */
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .bg-glow {
+      position: fixed; z-index: 0; pointer-events: none;
+      width: 600px; height: 600px; border-radius: 50%;
+      filter: blur(160px); opacity: 0.12;
+    }
+    .bg-glow--cyan  { top: -200px; left: -100px; background: var(--accent); }
+    .bg-glow--purple { bottom: -200px; right: -100px; background: var(--accent2); }
+
+    /* ── Navigation ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 1rem 2rem;
+      background: rgba(10, 10, 15, 0.75);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo {
+      font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em;
+      background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: var(--text-secondary); text-decoration: none; font-size: 0.9rem;
+      font-weight: 500; transition: color 0.3s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-cta {
+      padding: 0.5rem 1.4rem; border-radius: 9999px; font-size: 0.85rem;
+      font-weight: 600; background: var(--gradient); color: #fff;
+      text-decoration: none; transition: box-shadow 0.3s;
+    }
+    .nav-cta:hover { box-shadow: 0 0 24px var(--accent-glow); }
+    .mobile-toggle { display: none; background: none; border: none; color: var(--text-primary); font-size: 1.5rem; cursor: pointer; }
+
+    /* ── Section shared ── */
+    section { position: relative; z-index: 1; padding: 6rem 2rem; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      display: inline-block; font-size: 0.75rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.15em;
+      color: var(--accent); margin-bottom: 0.75rem;
+    }
+    .section-title {
+      font-size: 2.4rem; font-weight: 800; letter-spacing: -0.03em;
+      line-height: 1.15; margin-bottom: 1.2rem;
+    }
+    .section-title span {
+      background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    /* ── Hero ── */
+    #hero {
+      min-height: 100vh; display: flex; align-items: center;
+      text-align: center; padding-top: 5rem;
+    }
+    #hero .container { max-width: 800px; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.35rem 1rem; border-radius: 9999px; font-size: 0.8rem;
+      font-weight: 500; color: var(--accent);
+      background: rgba(0, 212, 255, 0.08); border: 1px solid rgba(0, 212, 255, 0.15);
+      margin-bottom: 2rem;
+    }
+    .hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .hero-title {
+      font-size: clamp(2.6rem, 5.5vw, 4.2rem); font-weight: 800;
+      letter-spacing: -0.04em; line-height: 1.1; margin-bottom: 1.5rem;
+    }
+    .hero-title span { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero-sub { font-size: 1.15rem; color: var(--text-secondary); max-width: 580px; margin: 0 auto 2.5rem; line-height: 1.7; }
+    .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.85rem 2rem; border-radius: 9999px; font-size: 0.95rem;
+      font-weight: 600; background: var(--gradient); color: #fff;
+      text-decoration: none; transition: box-shadow 0.3s, transform 0.3s;
+    }
+    .btn-primary:hover { box-shadow: 0 0 30px var(--accent-glow); transform: translateY(-2px); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.85rem 2rem; border-radius: 9999px; font-size: 0.95rem;
+      font-weight: 600; color: var(--text-primary);
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      text-decoration: none; transition: background 0.3s, border-color 0.3s;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
+
+    /* ── Stats strip ── */
+    .stats {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 2rem; text-align: center; margin-top: 5rem;
+      padding: 2.5rem 2rem; border-radius: 16px;
+      background: var(--bg-secondary); border: 1px solid var(--border);
+    }
+    .stat-num { font-size: 2.2rem; font-weight: 800; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .stat-label { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem; }
+
+    /* ── Services ── */
+    #services { background: var(--bg-secondary); }
+    .services-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem; margin-top: 3rem;
+    }
+    .service-card {
+      padding: 2rem; border-radius: 16px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    }
+    .service-card:hover {
+      border-color: rgba(0, 212, 255, 0.2);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    }
+    .service-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; margin-bottom: 1.2rem;
+      background: rgba(0, 212, 255, 0.08); color: var(--accent);
+    }
+    .service-card:nth-child(even) .service-icon { background: rgba(123,97,255,0.08); color: var(--accent2); }
+    .service-card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.6rem; }
+    .service-card p { font-size: 0.92rem; color: var(--text-secondary); line-height: 1.65; }
+
+    /* ── AI Tools ── */
+    #ai-tools { padding-bottom: 4rem; }
+    .tools-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem; margin-top: 3rem;
+    }
+    .tool-card {
+      padding: 1.8rem; border-radius: 16px; text-align: center;
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .tool-card:hover { border-color: rgba(123, 97, 255, 0.2); transform: translateY(-3px); }
+    .tool-icon { font-size: 2.2rem; margin-bottom: 1rem; }
+    .tool-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .tool-card p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
+    .tool-tag {
+      display: inline-block; margin-top: 0.8rem; padding: 0.25rem 0.75rem;
+      border-radius: 9999px; font-size: 0.7rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      background: rgba(0, 212, 255, 0.08); color: var(--accent);
+    }
+
+    /* ── About ── */
+    #about { background: var(--bg-secondary); }
+    .about-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 4rem; align-items: center; margin-top: 3rem; }
+    .about-photo {
+      width: 100%; aspect-ratio: 1; border-radius: 24px;
+      background: linear-gradient(135deg, rgba(0,212,255,0.12), rgba(123,97,255,0.12));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 5rem; border: 1px solid var(--border);
+    }
+    .about-text p { color: var(--text-secondary); font-size: 1rem; line-height: 1.8; margin-bottom: 1.2rem; }
+    .about-highlights { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.5rem; }
+    .highlight-tag {
+      padding: 0.4rem 1rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 500;
+      background: rgba(0,212,255,0.06); border: 1px solid rgba(0,212,255,0.12); color: var(--accent);
+    }
+
+    /* ── Contact ── */
+    #contact { padding-bottom: 4rem; }
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-top: 3rem; }
+    .contact-info h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem; }
+    .contact-info p { color: var(--text-secondary); line-height: 1.8; margin-bottom: 1.5rem; }
+    .contact-item { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.2rem; }
+    .contact-item-icon {
+      width: 44px; height: 44px; border-radius: 12px; display: flex;
+      align-items: center; justify-content: center; font-size: 1.1rem;
+      background: rgba(0,212,255,0.08); color: var(--accent); flex-shrink: 0;
+    }
+    .contact-item-text { font-size: 0.92rem; color: var(--text-secondary); }
+    .contact-item-text strong { color: var(--text-primary); display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.15rem; }
+
+    .contact-form { display: flex; flex-direction: column; gap: 1rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .contact-form input, .contact-form textarea {
+      width: 100%; padding: 0.85rem 1.2rem; border-radius: 12px;
+      border: 1px solid var(--border); background: var(--bg-secondary);
+      color: var(--text-primary); font-family: inherit; font-size: 0.92rem;
+      transition: border-color 0.3s;
+    }
+    .contact-form input::placeholder, .contact-form textarea::placeholder { color: rgba(160,160,184,0.5); }
+    .contact-form input:focus, .contact-form textarea:focus { outline: none; border-color: var(--accent); }
+    .contact-form textarea { min-height: 130px; resize: vertical; }
+    .contact-form button {
+      padding: 0.85rem 2rem; border-radius: 9999px; border: none;
+      background: var(--gradient); color: #fff; font-family: inherit;
+      font-size: 0.95rem; font-weight: 600; cursor: pointer;
+      transition: box-shadow 0.3s, transform 0.3s;
+    }
+    .contact-form button:hover { box-shadow: 0 0 30px var(--accent-glow); transform: translateY(-2px); }
+
+    /* ── Footer ── */
+    footer {
+      position: relative; z-index: 1; text-align: center;
+      padding: 3rem 2rem; border-top: 1px solid var(--border);
+      font-size: 0.85rem; color: var(--text-secondary);
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-cta { display: none; }
+      .mobile-toggle { display: block; }
+      nav.open .nav-links {
+        display: flex; flex-direction: column;
+        position: absolute; top: 100%; left: 0; right: 0;
+        background: rgba(10,10,15,0.95); padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--border);
+      }
+      .about-grid { grid-template-columns: 1fr; }
+      .about-photo { max-width: 280px; margin: 0 auto; }
+      .contact-grid { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .section-title { font-size: 1.9rem; }
+    }
+
+    /* ── Fade-in animations ── */
+    .fade-up { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+  <!-- Background effects -->
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow--cyan"></div>
+  <div class="bg-glow bg-glow--purple"></div>
+
+  <!-- Navigation -->
+  <nav>
+    <div class="logo">Frank Consulting</div>
+    <ul class="nav-links">
+      <li><a href="#services">Services</a></li>
+      <li><a href="#ai-tools">AI Tools</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <a href="#contact" class="nav-cta">Book a Call →</a>
+    <button class="mobile-toggle" onclick="document.querySelector('nav').classList.toggle('open')">☰</button>
+  </nav>
+
+  <!-- ════════════════ HERO ════════════════ -->
+  <section id="hero">
+    <div class="container">
+      <div class="hero-badge"><span class="dot"></span> AI-Powered Consulting</div>
+      <h1 class="hero-title">
+        Build Smarter with<br /><span>AI Software Tools</span>
+      </h1>
+      <p class="hero-sub">
+        We help businesses harness the power of artificial intelligence — from custom AI integrations and intelligent automation to full-scale software solutions that drive real results.
+      </p>
+      <div class="hero-btns">
+        <a href="#contact" class="btn-primary">Get Started ↗</a>
+        <a href="#services" class="btn-secondary">Explore Services</a>
+      </div>
+
+      <div class="stats">
+        <div><div class="stat-num">50+</div><div class="stat-label">Projects Delivered</div></div>
+        <div><div class="stat-num">98%</div><div class="stat-label">Client Satisfaction</div></div>
+        <div><div class="stat-num">12+</div><div class="stat-label">AI Tools Built</div></div>
+        <div><div class="stat-num">24/7</div><div class="stat-label">Support Available</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════ SERVICES ════════════════ -->
+  <section id="services">
+    <div class="container">
+      <div class="section-label fade-up">What We Offer</div>
+      <h2 class="section-title fade-up">Consulting <span>Services</span></h2>
+      <p class="fade-up" style="color:var(--text-secondary); max-width:600px; margin-bottom:1rem;">
+        End-to-end AI consulting — from strategy and prototyping to deployment and optimization.
+      </p>
+      <div class="services-grid">
+        <div class="service-card fade-up">
+          <div class="service-icon">🧠</div>
+          <h3>AI Strategy &amp; Roadmap</h3>
+          <p>Identify high-impact AI opportunities within your business and build a clear implementation roadmap aligned with your goals.</p>
+        </div>
+        <div class="service-card fade-up">
+          <div class="service-icon">⚙️</div>
+          <h3>Custom AI Development</h3>
+          <p>Design and build bespoke AI models, pipelines, and software tools tailored to your unique workflows and data.</p>
+        </div>
+        <div class="service-card fade-up">
+          <div class="service-icon">🔗</div>
+          <h3>System Integration</h3>
+          <p>Seamlessly embed AI capabilities into your existing tech stack — CRMs, ERPs, cloud platforms, and more.</p>
+        </div>
+        <div class="service-card fade-up">
+          <div class="service-icon">📊</div>
+          <h3>Data &amp; Analytics</h3>
+          <p>Transform raw data into actionable intelligence with automated reporting, dashboards, and predictive analytics.</p>
+        </div>
+        <div class="service-card fade-up">
+          <div class="service-icon">🤖</div>
+          <h3>Intelligent Automation</h3>
+          <p>Automate repetitive tasks with AI-driven workflows — from document processing to customer support bots.</p>
+        </div>
+        <div class="service-card fade-up">
+          <div class="service-icon">🛡️</div>
+          <h3>AI Audit &amp; Optimization</h3>
+          <p>Evaluate your existing AI systems for performance, fairness, and cost-efficiency — then optimize for better outcomes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════ AI TOOLS ════════════════ -->
+  <section id="ai-tools">
+    <div class="container">
+      <div class="section-label fade-up">Our Products</div>
+      <h2 class="section-title fade-up">AI-Powered <span>Online Tools</span></h2>
+      <p class="fade-up" style="color:var(--text-secondary); max-width:600px; margin-bottom:1rem;">
+        Ready-to-use AI tools you can access online — built to solve real business problems out of the box.
+      </p>
+      <div class="tools-grid">
+        <div class="tool-card fade-up">
+          <div class="tool-icon">💬</div>
+          <h3>AI Chat Assistant</h3>
+          <p>A customizable conversational AI for customer support, onboarding, and internal Q&amp;A.</p>
+          <span class="tool-tag">NLP</span>
+        </div>
+        <div class="tool-card fade-up">
+          <div class="tool-icon">📄</div>
+          <h3>Smart Document Processor</h3>
+          <p>Extract, classify, and summarize content from PDFs, invoices, and contracts in seconds.</p>
+          <span class="tool-tag">Document AI</span>
+        </div>
+        <div class="tool-card fade-up">
+          <div class="tool-icon">🔍</div>
+          <h3>Predictive Analytics Engine</h3>
+          <p>Forecast sales, churn, and demand with ML models trained on your historical data.</p>
+          <span class="tool-tag">Machine Learning</span>
+        </div>
+        <div class="tool-card fade-up">
+          <div class="tool-icon">🖼️</div>
+          <h3>Image &amp; Vision AI</h3>
+          <p>Automated image recognition, quality inspection, and visual content generation.</p>
+          <span class="tool-tag">Computer Vision</span>
+        </div>
+        <div class="tool-card fade-up">
+          <div class="tool-icon">📝</div>
+          <h3>Content Generator</h3>
+          <p>Generate marketing copy, product descriptions, and reports with AI writing assistance.</p>
+          <span class="tool-tag">Generative AI</span>
+        </div>
+        <div class="tool-card fade-up">
+          <div class="tool-icon">📡</div>
+          <h3>Real-Time Data Monitor</h3>
+          <p>AI-powered anomaly detection and alerting across your live data streams and dashboards.</p>
+          <span class="tool-tag">Streaming AI</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════ ABOUT ════════════════ -->
+  <section id="about">
+    <div class="container">
+      <div class="section-label fade-up">About Me</div>
+      <h2 class="section-title fade-up">Hi, I'm <span>Frank</span></h2>
+      <div class="about-grid">
+        <div class="about-photo fade-up">👤</div>
+        <div class="about-text fade-up">
+          <p>
+            I'm an AI consultant and software engineer with years of experience helping companies — from startups to enterprises — leverage artificial intelligence to solve real business problems.
+          </p>
+          <p>
+            My approach combines deep technical expertise with a practical, results-driven mindset. I don't just build AI for the sake of it — I build AI that moves the needle for your business.
+          </p>
+          <p>
+            Whether you need a custom machine learning pipeline, an intelligent automation tool, or strategic guidance on your AI roadmap, I'm here to help you every step of the way.
+          </p>
+          <div class="about-highlights">
+            <span class="highlight-tag">Machine Learning</span>
+            <span class="highlight-tag">LLMs &amp; NLP</span>
+            <span class="highlight-tag">Computer Vision</span>
+            <span class="highlight-tag">Cloud Architecture</span>
+            <span class="highlight-tag">Data Engineering</span>
+            <span class="highlight-tag">MLOps</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════ CONTACT ════════════════ -->
+  <section id="contact">
+    <div class="container">
+      <div class="section-label fade-up">Get In Touch</div>
+      <h2 class="section-title fade-up">Let's <span>Work Together</span></h2>
+      <div class="contact-grid">
+        <div class="contact-info fade-up">
+          <h3>Ready to bring AI into your business?</h3>
+          <p>
+            Book a free discovery call and let's explore how AI-powered tools can save you time, cut costs, and unlock new opportunities.
+          </p>
+          <div class="contact-item">
+            <div class="contact-item-icon">✉️</div>
+            <div class="contact-item-text"><strong>Email</strong>frank@frankconsulting.com</div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-item-icon">📞</div>
+            <div class="contact-item-text"><strong>Phone</strong>+1 (555) 000-0000</div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-item-icon">📍</div>
+            <div class="contact-item-text"><strong>Location</strong>Available Worldwide (Remote)</div>
+          </div>
+        </div>
+        <form class="contact-form fade-up" onsubmit="event.preventDefault(); alert('Thank you! Your message has been sent. I\'ll get back to you shortly.');">
+          <div class="form-row">
+            <input type="text" placeholder="Your Name" required />
+            <input type="email" placeholder="Your Email" required />
+          </div>
+          <input type="text" placeholder="Subject" />
+          <textarea placeholder="Tell me about your project or idea..."></textarea>
+          <button type="submit">Send Message →</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2026 Frank Consulting Service. All rights reserved. | <a href="#hero">Back to top ↑</a></p>
+  </footer>
+
+  <!-- Scroll Animations -->
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>客户档案库</title>
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --panel: #ffffff;
+    --border: #e4e7ec;
+    --text: #101828;
+    --muted: #667085;
+    --accent: #76b900;          /* NVIDIA green */
+    --accent-dark: #5a9100;
+    --accent-soft: #eaf5d6;
+    --danger: #d92d20;
+    --warn: #f79009;
+    --info: #1570ef;
+    --shadow: 0 1px 3px rgba(16,24,40,.08), 0 1px 2px rgba(16,24,40,.04);
+    --shadow-lg: 0 12px 32px rgba(16,24,40,.12);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  /* ===== Layout ===== */
+  .app {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+  }
+  .sidebar {
+    background: #0f1419;
+    color: #e4e7ec;
+    padding: 24px 18px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .sidebar h1 {
+    font-size: 18px;
+    margin: 0 0 4px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sidebar h1 .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+  }
+  .sidebar .sub { font-size: 12px; color: #98a2b3; margin-bottom: 28px; }
+  .nav-section { margin-bottom: 22px; }
+  .nav-section h3 {
+    font-size: 11px;
+    color: #98a2b3;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin: 0 0 10px;
+    font-weight: 600;
+  }
+  .nav-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #d0d5dd;
+    font-size: 13px;
+    margin-bottom: 2px;
+    transition: background .15s;
+  }
+  .nav-item:hover { background: rgba(255,255,255,.06); }
+  .nav-item.active { background: rgba(118,185,0,.15); color: #fff; }
+  .nav-item .count {
+    background: rgba(255,255,255,.1);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    color: #98a2b3;
+  }
+  .nav-item.active .count { background: var(--accent); color: #0f1419; }
+
+  .stats-mini {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    margin-bottom: 22px;
+  }
+  .stat-mini {
+    background: rgba(255,255,255,.04);
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,.06);
+  }
+  .stat-mini .v { font-size: 18px; font-weight: 600; color: #fff; }
+  .stat-mini .l { font-size: 11px; color: #98a2b3; margin-top: 2px; }
+
+  .sidebar-actions { margin-top: auto; padding-top: 16px; }
+
+  /* ===== Main ===== */
+  .main { padding: 24px 32px; }
+  .topbar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 22px; gap: 16px; flex-wrap: wrap;
+  }
+  .search {
+    flex: 1; min-width: 280px;
+    display: flex; align-items: center; gap: 8px;
+    background: #fff; border: 1px solid var(--border);
+    padding: 9px 14px; border-radius: 8px;
+    box-shadow: var(--shadow);
+  }
+  .search input {
+    flex: 1; border: 0; outline: 0; font-size: 14px;
+    background: transparent; color: var(--text);
+  }
+  .search .icon { color: var(--muted); }
+
+  .topbar-actions { display: flex; gap: 8px; }
+  .btn {
+    border: 1px solid var(--border);
+    background: #fff; color: var(--text);
+    padding: 8px 14px; border-radius: 6px;
+    cursor: pointer; font-size: 13px;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: all .15s;
+  }
+  .btn:hover { background: #f9fafb; border-color: #d0d5dd; }
+  .btn.primary {
+    background: var(--accent); border-color: var(--accent);
+    color: #fff; font-weight: 500;
+  }
+  .btn.primary:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
+  .btn.danger { color: var(--danger); border-color: #fda29b; }
+  .btn.danger:hover { background: #fef3f2; }
+  .btn.ghost-dark { background: transparent; color: #d0d5dd; border-color: rgba(255,255,255,.15); width: 100%; }
+  .btn.ghost-dark:hover { background: rgba(255,255,255,.06); }
+
+  /* ===== Card grid ===== */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+    position: relative;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--accent);
+  }
+  .card-head {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+  }
+  .avatar {
+    width: 44px; height: 44px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 16px;
+    flex-shrink: 0;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+  }
+  .avatar.has-img { background-image: var(--avatar-url); }
+  .avatar.has-img span { display: none; }
+  .avatar-large {
+    width: 64px; height: 64px; border-radius: 12px; font-size: 22px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; overflow: hidden;
+    background-size: cover; background-position: center;
+    flex-shrink: 0;
+  }
+  .avatar-large.has-img span { display: none; }
+  .avatar-upload {
+    position: relative; cursor: pointer;
+    width: 84px; height: 84px; border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    color: #fff; font-size: 24px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    background-size: cover; background-position: center;
+    border: 2px dashed transparent;
+    transition: border-color .2s;
+  }
+  .avatar-upload:hover { border-color: var(--accent); }
+  .avatar-upload .overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,.45);
+    color: #fff; font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity .2s;
+  }
+  .avatar-upload:hover .overlay { opacity: 1; }
+  .avatar-upload input[type=file] { display: none; }
+  .avatar-actions { display: flex; flex-direction: column; gap: 6px; justify-content: center; }
+  .avatar-actions .small {
+    font-size: 11px; padding: 4px 8px; border-radius: 4px;
+    border: 1px solid var(--border); background: #fff;
+    cursor: pointer; color: var(--muted);
+  }
+  .avatar-actions .small:hover { color: var(--text); }
+  .card-title { font-size: 15px; font-weight: 600; margin: 0; }
+  .card-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .badge {
+    position: absolute; top: 14px; right: 14px;
+    font-size: 11px; padding: 3px 8px; border-radius: 12px;
+    font-weight: 600;
+  }
+  .badge.A { background: #ecfdf3; color: #027a48; }
+  .badge.B { background: #eff8ff; color: #175cd3; }
+  .badge.C { background: #fffaeb; color: #b54708; }
+
+  .score-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--accent-soft); color: var(--accent-dark);
+    padding: 3px 8px; border-radius: 10px;
+    font-size: 11px; font-weight: 600;
+  }
+  .score-pill .num { font-size: 13px; }
+  .score-pill.hot { background: #fef0c7; color: #b54708; }
+
+  .yn-pill {
+    display: inline-block; padding: 2px 7px; border-radius: 3px;
+    font-size: 11px; font-weight: 500;
+  }
+  .yn-pill.yes { background: #ecfdf3; color: #027a48; }
+  .yn-pill.no  { background: #f2f4f7; color: #667085; }
+
+  .score-summary {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    background: linear-gradient(135deg, #fafbfc, #f0f9ff);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px; margin-bottom: 16px;
+  }
+  .score-summary .item {
+    display: flex; align-items: center; gap: 6px;
+    background: #fff; padding: 5px 10px; border-radius: 6px;
+    border: 1px solid var(--border); font-size: 12px;
+  }
+  .score-summary .item .k { color: var(--muted); }
+  .score-total {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 8px;
+    background: var(--accent); color: #fff;
+    padding: 6px 14px; border-radius: 8px;
+    font-weight: 700; font-size: 14px;
+  }
+  .score-total .max { opacity: .7; font-weight: 500; font-size: 11px; }
+
+  .card-meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+  .tag {
+    font-size: 11px; padding: 3px 8px; border-radius: 4px;
+    background: var(--accent-soft); color: var(--accent-dark);
+    font-weight: 500;
+  }
+  .tag.gray { background: #f2f4f7; color: #344054; }
+  .card-row {
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: var(--muted); padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .card-row strong { color: var(--text); font-weight: 600; }
+
+  /* ===== Empty state ===== */
+  .empty {
+    text-align: center; padding: 80px 20px;
+    color: var(--muted);
+  }
+  .empty .icon { font-size: 48px; margin-bottom: 12px; opacity: .3; }
+
+  /* ===== Detail drawer ===== */
+  .drawer-mask {
+    position: fixed; inset: 0; background: rgba(16,24,40,.4);
+    opacity: 0; visibility: hidden; transition: all .2s;
+    z-index: 100;
+  }
+  .drawer-mask.open { opacity: 1; visibility: visible; }
+  .drawer {
+    position: fixed; top: 0; right: 0;
+    width: min(720px, 100%);
+    height: 100vh; background: #fff;
+    box-shadow: -8px 0 40px rgba(16,24,40,.16);
+    transform: translateX(100%);
+    transition: transform .25s ease;
+    z-index: 101;
+    overflow-y: auto;
+    display: flex; flex-direction: column;
+  }
+  .drawer.open { transform: translateX(0); }
+  .drawer-head {
+    padding: 22px 28px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fff;
+    position: sticky; top: 0; z-index: 5;
+  }
+  .drawer-head h2 { margin: 0; font-size: 18px; }
+  .drawer-body { padding: 24px 28px; flex: 1; }
+  .drawer-foot {
+    padding: 16px 28px;
+    border-top: 1px solid var(--border);
+    display: flex; gap: 8px; justify-content: flex-end;
+    background: #fff;
+    position: sticky; bottom: 0;
+  }
+  .close-btn {
+    background: transparent; border: 0; cursor: pointer;
+    width: 32px; height: 32px; border-radius: 6px;
+    color: var(--muted); font-size: 20px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .close-btn:hover { background: #f2f4f7; color: var(--text); }
+
+  /* ===== Detail content ===== */
+  .section { margin-bottom: 28px; }
+  .section h3 {
+    font-size: 13px;
+    margin: 0 0 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .section h3::before {
+    content: ''; width: 3px; height: 14px;
+    background: var(--accent); border-radius: 2px;
+  }
+  .info-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px 24px;
+  }
+  .info-item .label { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+  .info-item .value { font-size: 14px; color: var(--text); font-weight: 500; }
+
+  .contact-list, .record-list { display: flex; flex-direction: column; gap: 10px; }
+  .contact-card, .record-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    background: #fafbfc;
+  }
+  .contact-card .head, .record-card .head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 6px;
+  }
+  .contact-card .name { font-weight: 600; }
+  .role-tag {
+    font-size: 11px; padding: 2px 8px; border-radius: 4px;
+    background: #fff; border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .role-tag.决策者 { background: #fef3f2; color: var(--danger); border-color: #fecdca; }
+  .role-tag.影响者 { background: #fffaeb; color: var(--warn); border-color: #fec84b; }
+  .role-tag.把关者 { background: #eff8ff; color: var(--info); border-color: #b2ddff; }
+  .role-tag.使用者 { background: #ecfdf3; color: #027a48; border-color: #abefc6; }
+  .contact-card .detail, .record-card .detail {
+    font-size: 12px; color: var(--muted);
+  }
+
+  .stage-tag {
+    font-size: 11px; padding: 2px 8px; border-radius: 10px;
+    font-weight: 500;
+  }
+  .stage-tag.线索 { background: #f2f4f7; color: #344054; }
+  .stage-tag.商机 { background: #eff8ff; color: var(--info); }
+  .stage-tag.进行中 { background: #fffaeb; color: var(--warn); }
+  .stage-tag.已成交 { background: #ecfdf3; color: #027a48; }
+  .stage-tag.已流失 { background: #fef3f2; color: var(--danger); }
+
+  .timeline-item { position: relative; padding-left: 16px; border-left: 2px solid var(--border); }
+
+  /* ===== Form (edit drawer) ===== */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
+  .form-grid .full { grid-column: 1 / -1; }
+  .field { display: flex; flex-direction: column; }
+  .field label {
+    font-size: 12px; color: var(--muted); margin-bottom: 4px; font-weight: 500;
+  }
+  .field input, .field select, .field textarea {
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px 10px; font-size: 13px; font-family: inherit;
+    background: #fff; color: var(--text); outline: 0;
+    transition: border-color .15s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(118,185,0,.15);
+  }
+  .field textarea { resize: vertical; min-height: 60px; }
+
+  .sub-form {
+    border: 1px dashed #d0d5dd; border-radius: 8px;
+    padding: 12px; margin-bottom: 10px; background: #fafbfc;
+  }
+  .sub-form .form-grid { grid-template-columns: 1fr 1fr 1fr; }
+  .sub-form-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px;
+  }
+  .sub-form-head strong { font-size: 13px; }
+  .icon-btn {
+    border: 0; background: transparent; cursor: pointer;
+    color: var(--danger); font-size: 12px;
+  }
+  .add-sub {
+    border: 1px dashed #d0d5dd; background: transparent;
+    width: 100%; padding: 10px; border-radius: 8px;
+    color: var(--muted); cursor: pointer; font-size: 13px;
+  }
+  .add-sub:hover { border-color: var(--accent); color: var(--accent-dark); }
+
+  /* ===== Toast ===== */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    background: #0f1419; color: #fff;
+    padding: 10px 18px; border-radius: 8px;
+    font-size: 13px; z-index: 200;
+    opacity: 0; transition: opacity .2s, transform .2s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 768px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; }
+    .main { padding: 16px; }
+    .form-grid, .info-grid, .sub-form .form-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Hidden file input */
+  #importFile { display: none; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="index.html" style="color:#98a2b3;font-size:12px;text-decoration:none;display:inline-block;margin-bottom:14px;">← 返回 Frank Consulting</a>
+    <h1><span class="dot"></span>客户档案库</h1>
+    <div class="sub">Customer Archive</div>
+
+    <div class="stats-mini">
+      <div class="stat-mini">
+        <div class="v" id="statTotal">0</div>
+        <div class="l">客户总数</div>
+      </div>
+      <div class="stat-mini">
+        <div class="v" id="statA">0</div>
+        <div class="l">A 级客户</div>
+      </div>
+      <div class="stat-mini">
+        <div class="v" id="statDeal">0</div>
+        <div class="l">已成交</div>
+      </div>
+      <div class="stat-mini">
+        <div class="v" id="statActive">0</div>
+        <div class="l">进行中</div>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <h3>客户等级</h3>
+      <div id="navLevels"></div>
+    </div>
+    <div class="nav-section">
+      <h3>行业</h3>
+      <div id="navIndustries"></div>
+    </div>
+    <div class="nav-section">
+      <h3>风险</h3>
+      <div id="navRisks"></div>
+    </div>
+
+    <div class="sidebar-actions">
+      <button class="btn ghost-dark" onclick="exportData()">↓ 导出 JSON</button>
+      <div style="height:8px"></div>
+      <button class="btn ghost-dark" onclick="document.getElementById('importFile').click()">↑ 导入 JSON</button>
+      <input type="file" id="importFile" accept=".json" onchange="importData(event)" />
+      <div style="height:8px"></div>
+      <button class="btn ghost-dark" onclick="exportCSV()">↓ 导出 CSV</button>
+      <div style="height:8px"></div>
+      <button class="btn ghost-dark" onclick="resetDemo()">↻ 重置示例数据</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <div class="search">
+        <span class="icon">🔍</span>
+        <input id="searchInput" type="text" placeholder="搜索客户名称、行业、标签、联系人…" oninput="render()" />
+      </div>
+      <div class="topbar-actions">
+        <button class="btn primary" onclick="openEditDrawer()">+ 新建客户</button>
+      </div>
+    </div>
+
+    <div id="cardGrid" class="grid"></div>
+    <div id="emptyState" class="empty" style="display:none">
+      <div class="icon">📋</div>
+      <div>没有找到匹配的客户</div>
+      <div style="margin-top:6px; font-size:12px">尝试清空筛选条件,或新建一个客户</div>
+    </div>
+  </main>
+</div>
+
+<!-- Detail drawer -->
+<div class="drawer-mask" id="detailMask" onclick="closeDetail()"></div>
+<div class="drawer" id="detailDrawer">
+  <div class="drawer-head">
+    <h2 id="detailTitle">客户详情</h2>
+    <button class="close-btn" onclick="closeDetail()">×</button>
+  </div>
+  <div class="drawer-body" id="detailBody"></div>
+  <div class="drawer-foot">
+    <button class="btn danger" onclick="deleteCurrent()">删除</button>
+    <button class="btn" onclick="closeDetail()">关闭</button>
+    <button class="btn primary" onclick="editCurrent()">编辑</button>
+  </div>
+</div>
+
+<!-- Edit drawer -->
+<div class="drawer-mask" id="editMask" onclick="closeEdit()"></div>
+<div class="drawer" id="editDrawer">
+  <div class="drawer-head">
+    <h2 id="editTitle">新建客户</h2>
+    <button class="close-btn" onclick="closeEdit()">×</button>
+  </div>
+  <div class="drawer-body" id="editBody"></div>
+  <div class="drawer-foot">
+    <button class="btn" onclick="closeEdit()">取消</button>
+    <button class="btn primary" onclick="saveEdit()">保存</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============== Demo data ==============
+const DEMO = [
+  {
+    id: "c001",
+    name: "未来动力科技有限公司",
+    short: "未来动力",
+    industry: "新能源汽车",
+    scale: "大型",
+    region: "上海",
+    website: "www.futuredrive.example",
+    address: "上海市浦东新区张江高科技园区科苑路 88 号",
+    established: "2015",
+    revenue: "50 亿元 / 年",
+    level: "A",
+    risk: "低",
+    tags: ["战略客户", "AI 计算", "自动驾驶", "续约高意愿"],
+    needs: "需要大规模 GPU 集群用于自动驾驶模型训练,关注稳定性与售后响应",
+    owner: "Frank Wang",
+    contacts: [
+      { name: "李文博", title: "CTO", role: "决策者", phone: "138-0001-0001", email: "liwb@futuredrive.example", notes: "技术背景出身,关注算力性价比" },
+      { name: "张雪", title: "采购总监", role: "把关者", phone: "138-0001-0002", email: "zhangx@futuredrive.example", notes: "对账期/合同条款较敏感" },
+      { name: "陈昊", title: "算法负责人", role: "影响者", phone: "", email: "chenhao@futuredrive.example", notes: "对新硬件接受度高,技术影响力大" }
+    ],
+    records: [
+      { date: "2026-04-22", type: "合作项目", title: "DGX H200 集群一期交付", amount: "¥ 2,800 万", stage: "进行中", notes: "硬件已到货,正在做联调" },
+      { date: "2026-03-10", type: "拜访", title: "上海现场交流", amount: "", stage: "商机", notes: "确认二期扩容需求" },
+      { date: "2025-12-05", type: "订单", title: "首期 PoC 采购", amount: "¥ 480 万", stage: "已成交", notes: "PoC 完成,客户满意度高" }
+    ],
+    createdAt: "2025-11-01",
+    updatedAt: "2026-04-22"
+  },
+  {
+    id: "c002",
+    name: "云栈科技股份有限公司",
+    short: "云栈科技",
+    industry: "云计算 / IDC",
+    scale: "大型",
+    region: "北京",
+    website: "www.yunstack.example",
+    address: "北京市海淀区西二旗中关村软件园 16 号楼",
+    established: "2012",
+    revenue: "120 亿元 / 年",
+    level: "A",
+    risk: "中",
+    tags: ["大客户", "公有云", "招投标", "价格敏感"],
+    needs: "公有云 GPU 实例产品线扩容,关注单卡 TCO 与上架效率",
+    owner: "Frank Wang",
+    contacts: [
+      { name: "周涛", title: "副总裁", role: "决策者", phone: "138-0002-0001", email: "zhoutao@yunstack.example", notes: "倾向于多供应商策略" },
+      { name: "刘梦", title: "高级采购经理", role: "把关者", phone: "138-0002-0002", email: "liumeng@yunstack.example", notes: "招投标流程严格,需提前 30 天准备" }
+    ],
+    records: [
+      { date: "2026-05-02", type: "沟通", title: "Q3 招标预沟通", amount: "", stage: "商机", notes: "目标体量 1500 卡左右" },
+      { date: "2026-01-18", type: "订单", title: "2025 年补单交付", amount: "¥ 1,200 万", stage: "已成交", notes: "未足额交付,差额结转" },
+      { date: "2025-09-22", type: "合作项目", title: "联合白皮书发布", amount: "", stage: "已成交", notes: "市场层面建立联合品牌" }
+    ],
+    createdAt: "2025-06-12",
+    updatedAt: "2026-05-02"
+  },
+  {
+    id: "c003",
+    name: "深智医疗信息有限公司",
+    short: "深智医疗",
+    industry: "医疗 / 医学影像",
+    scale: "中型",
+    region: "深圳",
+    website: "www.deepmed.example",
+    address: "深圳市南山区科技园南区学府路 18 号",
+    established: "2018",
+    revenue: "8 亿元 / 年",
+    level: "B",
+    risk: "低",
+    tags: ["医学影像", "AI 推理", "高校合作", "潜力客户"],
+    needs: "医学影像辅助诊断推理服务器,需通过 NMPA 认证相关测试",
+    owner: "Frank Wang",
+    contacts: [
+      { name: "孙明珠", title: "CEO", role: "决策者", phone: "138-0003-0001", email: "sun@deepmed.example", notes: "海归博士,英文沟通顺畅" },
+      { name: "韩晨", title: "工程总监", role: "使用者", phone: "138-0003-0002", email: "han@deepmed.example", notes: "实际负责模型调优与部署" }
+    ],
+    records: [
+      { date: "2026-04-30", type: "沟通", title: "PoC 启动会议", amount: "", stage: "进行中", notes: "提供 2 台 L40S 用于评估" },
+      { date: "2026-03-15", type: "拜访", title: "客户实验室参观", amount: "", stage: "商机", notes: "确认了影像推理工作负载特征" }
+    ],
+    createdAt: "2026-02-08",
+    updatedAt: "2026-04-30"
+  },
+  {
+    id: "c004",
+    name: "明川制造集团",
+    short: "明川制造",
+    industry: "智能制造",
+    scale: "大型",
+    region: "苏州",
+    website: "www.mingchuan.example",
+    address: "江苏省苏州市工业园区现代大道 999 号",
+    established: "2003",
+    revenue: "35 亿元 / 年",
+    level: "B",
+    risk: "中",
+    tags: ["边缘 AI", "工厂质检", "数字化转型", "复购周期长"],
+    needs: "边缘侧视觉质检方案,关注总价与现场部署稳定性",
+    owner: "Frank Wang",
+    contacts: [
+      { name: "王志远", title: "信息中心主任", role: "决策者", phone: "138-0004-0001", email: "wangzy@mingchuan.example", notes: "传统制造业背景,较谨慎" },
+      { name: "罗静", title: "IT 经理", role: "影响者", phone: "", email: "luojing@mingchuan.example", notes: "" }
+    ],
+    records: [
+      { date: "2026-02-20", type: "拜访", title: "工厂现场勘察", amount: "", stage: "商机", notes: "确认 12 条产线的部署需求" },
+      { date: "2025-11-10", type: "订单", title: "首期边缘网关", amount: "¥ 320 万", stage: "已成交", notes: "" },
+      { date: "2025-08-05", type: "合作项目", title: "样板线建设", amount: "", stage: "已流失", notes: "样板线项目阶段性结束,等待二期立项" }
+    ],
+    createdAt: "2025-05-20",
+    updatedAt: "2026-02-20"
+  },
+  {
+    id: "c005",
+    name: "星海游戏工作室",
+    short: "星海游戏",
+    industry: "互联网 / 游戏",
+    scale: "中型",
+    region: "广州",
+    website: "www.xinghai.example",
+    address: "广东省广州市天河区珠江新城华夏路 30 号",
+    established: "2020",
+    revenue: "3 亿元 / 年",
+    level: "C",
+    risk: "高",
+    tags: ["小型工作室", "GenAI", "成本敏感", "首次合作"],
+    needs: "美术资产生成与虚拟角色推理,预算有限,关注租赁/分期方案",
+    owner: "Frank Wang",
+    contacts: [
+      { name: "杨子萱", title: "技术合伙人", role: "决策者", phone: "138-0005-0001", email: "yang@xinghai.example", notes: "决策果断,但预算受限" }
+    ],
+    records: [
+      { date: "2026-04-10", type: "沟通", title: "首次需求沟通", amount: "", stage: "线索", notes: "推荐了二手卡 + 云租赁方案" }
+    ],
+    createdAt: "2026-04-10",
+    updatedAt: "2026-04-10"
+  }
+];
+
+// ============== State ==============
+const STORE_KEY = "cowork_customer_archive_v1";
+const FILTER_KEY = "cowork_customer_archive_filter_v1";
+let customers = load();
+let activeFilter = JSON.parse(localStorage.getItem(FILTER_KEY) || '{"type":"all","value":""}');
+let currentId = null;
+let editingId = null;
+let editDraft = null;
+
+function load() {
+  try {
+    const saved = localStorage.getItem(STORE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(DEMO));
+}
+function save() {
+  localStorage.setItem(STORE_KEY, JSON.stringify(customers));
+  localStorage.setItem(FILTER_KEY, JSON.stringify(activeFilter));
+}
+function uid() { return "c" + Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
+function todayStr() { return new Date().toISOString().slice(0,10); }
+
+// ============== Render ==============
+function render() {
+  // stats
+  document.getElementById("statTotal").textContent = customers.length;
+  document.getElementById("statA").textContent = customers.filter(c => c.level === "A").length;
+  document.getElementById("statDeal").textContent = customers.filter(c => (c.records || []).some(r => r.stage === "已成交")).length;
+  document.getElementById("statActive").textContent = customers.filter(c => (c.records || []).some(r => r.stage === "进行中" || r.stage === "商机")).length;
+
+  // sidebar nav
+  renderNav();
+
+  // grid
+  const q = (document.getElementById("searchInput").value || "").trim().toLowerCase();
+  const filtered = customers.filter(c => {
+    // text search
+    if (q) {
+      const hay = [
+        c.name, c.short, c.industry, c.region, c.needs,
+        (c.tags||[]).join(" "),
+        (c.contacts||[]).map(x => x.name + " " + x.title).join(" ")
+      ].join(" ").toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    // active filter
+    if (activeFilter.type === "level" && c.level !== activeFilter.value) return false;
+    if (activeFilter.type === "industry" && c.industry !== activeFilter.value) return false;
+    if (activeFilter.type === "risk" && c.risk !== activeFilter.value) return false;
+    return true;
+  });
+
+  const grid = document.getElementById("cardGrid");
+  grid.innerHTML = "";
+  if (filtered.length === 0) {
+    document.getElementById("emptyState").style.display = "";
+    return;
+  }
+  document.getElementById("emptyState").style.display = "none";
+  filtered.forEach(c => grid.appendChild(cardEl(c)));
+}
+
+function cardEl(c) {
+  const div = document.createElement("div");
+  div.className = "card";
+  div.onclick = () => openDetail(c.id);
+  const initial = (c.short || c.name || "?").slice(0,2);
+  const tagsHtml = (c.tags || []).slice(0,4).map(t => `<span class="tag">${esc(t)}</span>`).join("");
+  const lastRec = (c.records || []).slice().sort((a,b) => (b.date||"").localeCompare(a.date||""))[0];
+  const lastText = lastRec ? `${lastRec.date} · ${lastRec.title}` : "暂无活动";
+  const avatarHtml = c.avatar
+    ? `<div class="avatar has-img" style="--avatar-url:url('${escAttr(c.avatar)}')"><span>${esc(initial)}</span></div>`
+    : `<div class="avatar"><span>${esc(initial)}</span></div>`;
+  const score = effectivePoints(c);
+  const hasScoring = c.married || c.child || c.house || c.dissatisfied ||
+    c.entrepreneurship || c.coachable || c.totalPoints;
+  const scorePill = hasScoring
+    ? `<span class="score-pill ${score >= 4 ? 'hot' : ''}" title="评估总分 (满分 6)">⭐ <span class="num">${score}</span>/6</span>`
+    : "";
+  div.innerHTML = `
+    <span class="badge ${c.level||'C'}">${c.level||'C'} 级</span>
+    <div class="card-head">
+      ${avatarHtml}
+      <div>
+        <div class="card-title">${esc(c.short || c.name)}</div>
+        <div class="card-sub">${esc(c.industry || "")}${c.region ? " · " + esc(c.region) : ""}</div>
+      </div>
+    </div>
+    <div class="card-meta">
+      ${scorePill}
+      ${tagsHtml}
+      ${(c.tags||[]).length > 4 ? `<span class="tag gray">+${c.tags.length - 4}</span>` : ""}
+    </div>
+    <div class="card-row">
+      <span>${esc((c.contacts||[]).length)} 联系人 · ${esc((c.records||[]).length)} 条记录</span>
+      <strong>${esc(lastText)}</strong>
+    </div>
+  `;
+  return div;
+}
+
+function renderNav() {
+  // levels
+  const lvlCount = countBy("level");
+  const navL = document.getElementById("navLevels");
+  navL.innerHTML = navItem({type:"all", value:""}, "全部客户", customers.length);
+  ["A","B","C"].forEach(L => {
+    navL.innerHTML += navItem({type:"level", value:L}, L + " 级", lvlCount[L] || 0);
+  });
+
+  // industries
+  const indCount = countBy("industry");
+  const navI = document.getElementById("navIndustries");
+  navI.innerHTML = "";
+  Object.entries(indCount).sort((a,b)=>b[1]-a[1]).forEach(([k,v]) => {
+    navI.innerHTML += navItem({type:"industry", value:k}, k, v);
+  });
+
+  // risks
+  const riskCount = countBy("risk");
+  const navR = document.getElementById("navRisks");
+  navR.innerHTML = "";
+  ["低","中","高"].forEach(R => {
+    if (riskCount[R]) navR.innerHTML += navItem({type:"risk", value:R}, R + " 风险", riskCount[R]);
+  });
+}
+
+function countBy(field) {
+  const m = {};
+  customers.forEach(c => { const v = c[field]; if (v) m[v] = (m[v]||0) + 1; });
+  return m;
+}
+
+function navItem(filter, label, count) {
+  const active = filter.type === activeFilter.type && filter.value === activeFilter.value;
+  return `<div class="nav-item ${active?'active':''}" onclick='setFilter(${JSON.stringify(filter)})'>
+    <span>${esc(label)}</span><span class="count">${count}</span>
+  </div>`;
+}
+
+function setFilter(f) {
+  activeFilter = f;
+  save();
+  render();
+}
+
+// ============== Detail ==============
+function openDetail(id) {
+  currentId = id;
+  const c = customers.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById("detailTitle").innerHTML = detailTitleHtml(c);
+  document.getElementById("detailBody").innerHTML = detailHtml(c);
+  document.getElementById("detailMask").classList.add("open");
+  document.getElementById("detailDrawer").classList.add("open");
+}
+function closeDetail() {
+  currentId = null;
+  document.getElementById("detailMask").classList.remove("open");
+  document.getElementById("detailDrawer").classList.remove("open");
+}
+function detailTitleHtml(c) {
+  const initial = (c.short || c.name || "?").slice(0,2);
+  const avatar = c.avatar
+    ? `<div class="avatar-large has-img" style="background-image:url('${escAttr(c.avatar)}')"><span>${esc(initial)}</span></div>`
+    : `<div class="avatar-large"><span>${esc(initial)}</span></div>`;
+  return `
+    <div style="display:flex;align-items:center;gap:12px;">
+      ${avatar}
+      <div>
+        <div style="font-size:18px;font-weight:600;">${esc(c.name)}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">${esc(c.industry || "")}${c.region ? " · " + esc(c.region) : ""}</div>
+      </div>
+    </div>
+  `;
+}
+
+function detailHtml(c) {
+  const info = [
+    ["客户简称", c.short],
+    ["行业", c.industry],
+    ["规模", c.scale],
+    ["地区", c.region],
+    ["客户等级", c.level ? c.level + " 级" : ""],
+    ["风险等级", c.risk],
+    ["地址", c.address],
+    ["加入年份", c.established],
+    ["最后更新", c.updatedAt]
+  ];
+  const infoHtml = info.map(([k,v]) => v ? `
+    <div class="info-item">
+      <div class="label">${esc(k)}</div>
+      <div class="value">${esc(v)}</div>
+    </div>` : "").join("");
+
+  // ===== Scoring panel =====
+  const score = effectivePoints(c);
+  const scoreItems = [
+    ["Relationship", c.relationship],
+    ["Occupation", c.occupation],
+    ["Age", c.age],
+    ["Income", c.income]
+  ].filter(([,v]) => v).map(([k,v]) =>
+    `<div class="item"><span class="k">${esc(k)}:</span> ${esc(v)}</div>`
+  ).join("");
+  const ynItems = [
+    ["Married", c.married], ["Child", c.child], ["House", c.house],
+    ["Dissatisfied", c.dissatisfied],
+    ["Entrepreneurship", c.entrepreneurship], ["Coachable", c.coachable]
+  ].map(([k,v]) => {
+    const cls = v === "是" ? "yes" : (v === "否" ? "no" : "");
+    const txt = v || "—";
+    return `<div class="item"><span class="k">${esc(k)}:</span> <span class="yn-pill ${cls}">${esc(txt)}</span></div>`;
+  }).join("");
+  const hasScoring = (c.relationship || c.occupation || c.age || c.income ||
+    c.married || c.child || c.house || c.dissatisfied || c.entrepreneurship || c.coachable || c.totalPoints);
+  const scoringHtml = hasScoring ? `
+    <div class="section">
+      <h3>评估打分 (ABC 名单)</h3>
+      <div class="score-summary">
+        ${scoreItems}${ynItems}
+        <div class="score-total">${score} <span class="max">/ 6</span></div>
+      </div>
+      ${c.profileNotes ? `<div style="background:#fafbfc;border:1px solid var(--border);padding:12px;border-radius:8px;font-size:13px;color:#344054;">
+        <div style="color:var(--muted);font-size:12px;margin-bottom:4px;">Notes 备注</div>
+        ${esc(c.profileNotes)}
+      </div>` : ""}
+    </div>
+  ` : "";
+
+  const tagsHtml = (c.tags||[]).map(t => `<span class="tag">${esc(t)}</span>`).join(" ");
+
+  const contactsHtml = (c.contacts||[]).map(ct => `
+    <div class="contact-card">
+      <div class="head">
+        <span class="name">${esc(ct.name)} <span style="color:var(--muted);font-weight:400">· ${esc(ct.title||"")}</span></span>
+        <span class="role-tag ${esc(ct.role||"")}">${esc(ct.role||"")}</span>
+      </div>
+      <div class="detail">
+        ${ct.phone ? "📞 " + esc(ct.phone) : ""}${ct.phone && ct.email ? " &nbsp; " : ""}${ct.email ? "✉️ " + esc(ct.email) : ""}
+        ${ct.notes ? `<div style="margin-top:6px;color:#475467">${esc(ct.notes)}</div>` : ""}
+      </div>
+    </div>
+  `).join("") || `<div style="color:var(--muted);font-size:13px">暂无联系人</div>`;
+
+  const recs = (c.records||[]).slice().sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  const recsHtml = recs.map(r => `
+    <div class="record-card">
+      <div class="head">
+        <span><strong>${esc(r.title)}</strong> <span style="color:var(--muted);font-size:12px"> · ${esc(r.type||"")}</span></span>
+        <span class="stage-tag ${esc(r.stage||"")}">${esc(r.stage||"")}</span>
+      </div>
+      <div class="detail">
+        ${r.date ? "📅 " + esc(r.date) : ""}${r.amount ? " &nbsp; 💰 " + esc(r.amount) : ""}
+        ${r.notes ? `<div style="margin-top:6px;color:#475467">${esc(r.notes)}</div>` : ""}
+      </div>
+    </div>
+  `).join("") || `<div style="color:var(--muted);font-size:13px">暂无业务记录</div>`;
+
+  return `
+    <div class="section">
+      <h3>基础信息</h3>
+      <div class="info-grid">${infoHtml}</div>
+    </div>
+    ${scoringHtml}
+    <div class="section">
+      <h3>标签 & 画像</h3>
+      <div style="margin-bottom:10px">${tagsHtml || '<span style="color:var(--muted);font-size:13px">暂无标签</span>'}</div>
+      ${c.needs ? `<div style="background:#fafbfc;border:1px solid var(--border);padding:12px;border-radius:8px;font-size:13px;color:#344054">
+        <div style="color:var(--muted);font-size:12px;margin-bottom:4px">需求 & 偏好</div>
+        ${esc(c.needs)}
+      </div>` : ""}
+    </div>
+    <div class="section">
+      <h3>联系人 & 决策链 (${(c.contacts||[]).length})</h3>
+      <div class="contact-list">${contactsHtml}</div>
+    </div>
+    <div class="section">
+      <h3>业务 / 项目记录 (${(c.records||[]).length})</h3>
+      <div class="record-list">${recsHtml}</div>
+    </div>
+  `;
+}
+
+function editCurrent() {
+  if (!currentId) return;
+  const id = currentId;   // 缓存 id,避免 closeDetail() 清空后丢失
+  closeDetail();
+  openEditDrawer(id);
+}
+function deleteCurrent() {
+  if (!currentId) return;
+  const c = customers.find(x => x.id === currentId);
+  if (!confirm(`确认删除客户「${c.name}」?此操作无法撤销。`)) return;
+  customers = customers.filter(x => x.id !== currentId);
+  save();
+  closeDetail();
+  render();
+  toast("已删除");
+}
+
+// ============== Edit ==============
+function openEditDrawer(id) {
+  editingId = id || null;
+  const c = id ? customers.find(x => x.id === id) : blankCustomer();
+  editDraft = JSON.parse(JSON.stringify(c));
+  document.getElementById("editTitle").textContent = id ? "编辑客户" : "新建客户";
+  renderEditForm();
+  document.getElementById("editMask").classList.add("open");
+  document.getElementById("editDrawer").classList.add("open");
+}
+function closeEdit() {
+  editingId = null;
+  editDraft = null;
+  document.getElementById("editMask").classList.remove("open");
+  document.getElementById("editDrawer").classList.remove("open");
+}
+function blankCustomer() {
+  return {
+    id: uid(), name: "", short: "", industry: "", scale: "中型", region: "",
+    website: "", address: "", established: "", revenue: "",
+    level: "B", risk: "低", tags: [], needs: "", owner: "",
+    avatar: "",
+    // ===== Profile scoring (ABC list style) =====
+    relationship: "",      // 关系: 朋友/同事/亲戚/陌生 等
+    occupation: "",        // 职业
+    age: "",               // 年龄
+    married: "",           // 是 / 否
+    child: "",             // 是 / 否
+    house: "",             // 是 / 否
+    income: "",            // 收入 (文本或区间)
+    dissatisfied: "",      // 不满现状 是 / 否
+    entrepreneurship: "",  // 创业意向 是 / 否
+    coachable: "",         // 开放可教 是 / 否
+    totalPoints: "",       // 总分 (可自动计算或手填)
+    profileNotes: "",      // 备注
+    contacts: [], records: [],
+    createdAt: todayStr(), updatedAt: todayStr()
+  };
+}
+// 评估打分: 6 个 yes/no 字段中 "是" 的个数
+function computeScore(c) {
+  const yes = v => (v === "是" || v === "Yes" || v === "yes" || v === true);
+  return ["married","child","house","dissatisfied","entrepreneurship","coachable"]
+    .reduce((sum, k) => sum + (yes(c[k]) ? 1 : 0), 0);
+}
+function effectivePoints(c) {
+  if (c.totalPoints !== "" && c.totalPoints != null) {
+    const n = Number(c.totalPoints); if (!isNaN(n)) return n;
+  }
+  return computeScore(c);
+}
+function renderEditForm() {
+  const d = editDraft;
+  const body = document.getElementById("editBody");
+  const avatarInitial = (d.short || d.name || "?").slice(0,2);
+  const avatarStyle = d.avatar ? `background-image:url('${escAttr(d.avatar)}')` : "";
+  body.innerHTML = `
+    <div class="section">
+      <h3>头像</h3>
+      <div style="display:flex;gap:14px;align-items:center;">
+        <label class="avatar-upload" style="${avatarStyle}" id="avatarBox">
+          ${d.avatar ? "" : `<span>${esc(avatarInitial)}</span>`}
+          <span class="overlay">点击上传</span>
+          <input type="file" accept="image/*" onchange="onAvatarPick(event)" />
+        </label>
+        <div class="avatar-actions">
+          <div style="font-size:12px;color:var(--muted);max-width:240px;">支持 JPG / PNG,自动压缩到 240px。也可粘贴图片 URL。</div>
+          <input class="small" style="font-size:12px;padding:6px 8px;width:240px;" placeholder="或粘贴图片 URL…" value="${escAttr(d.avatar && d.avatar.startsWith('http') ? d.avatar : '')}" oninput="onAvatarUrl(this.value)" />
+          ${d.avatar ? `<button class="small" onclick="clearAvatar()">清除头像</button>` : ""}
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>基础信息</h3>
+      <div class="form-grid">
+        <div class="field"><label>客户全称 *</label><input id="f_name" value="${escAttr(d.name)}" /></div>
+        <div class="field"><label>简称</label><input id="f_short" value="${escAttr(d.short)}" /></div>
+        <div class="field"><label>行业</label><input id="f_industry" value="${escAttr(d.industry)}" /></div>
+        <div class="field"><label>规模</label>
+          <select id="f_scale">
+            ${["大型","中型","小型","初创"].map(o => `<option ${o===d.scale?"selected":""}>${o}</option>`).join("")}
+          </select>
+        </div>
+        <div class="field"><label>地区</label><input id="f_region" value="${escAttr(d.region)}" /></div>
+        <div class="field"><label>加入年份</label><input id="f_established" value="${escAttr(d.established)}" /></div>
+        <div class="field full"><label>地址</label><input id="f_address" value="${escAttr(d.address)}" /></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>评估打分 (ABC 名单)</h3>
+      <div class="form-grid">
+        <div class="field"><label>Relationship 关系</label>
+          <input id="f_relationship" value="${escAttr(d.relationship)}" placeholder="朋友 / 同事 / 亲戚 / 陌生" />
+        </div>
+        <div class="field"><label>Occupation 职业</label>
+          <input id="f_occupation" value="${escAttr(d.occupation)}" />
+        </div>
+        <div class="field"><label>Age 年龄</label>
+          <input id="f_age" type="number" value="${escAttr(d.age)}" />
+        </div>
+        <div class="field"><label>Income 收入</label>
+          <input id="f_income" value="${escAttr(d.income)}" placeholder="例如:10 万+ / 中等 / 高" />
+        </div>
+        ${ynField("married", "Married 已婚", d.married)}
+        ${ynField("child", "Child 有子女", d.child)}
+        ${ynField("house", "House 有房", d.house)}
+        ${ynField("dissatisfied", "Dissatisfied 不满现状", d.dissatisfied)}
+        ${ynField("entrepreneurship", "Entrepreneurship 创业意向", d.entrepreneurship)}
+        ${ynField("coachable", "Coachable 开放可教", d.coachable)}
+        <div class="field"><label>Total Points 总分 (留空则按 yes 自动计算)</label>
+          <input id="f_totalPoints" type="number" value="${escAttr(d.totalPoints)}" placeholder="自动: ${computeScore(d)} / 6" />
+        </div>
+        <div class="field full"><label>Notes 备注</label>
+          <textarea id="f_profileNotes">${esc(d.profileNotes||"")}</textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>标签 & 画像</h3>
+      <div class="form-grid">
+        <div class="field"><label>客户等级</label>
+          <select id="f_level">${["A","B","C"].map(o => `<option ${o===d.level?"selected":""}>${o}</option>`).join("")}</select>
+        </div>
+        <div class="field"><label>风险等级</label>
+          <select id="f_risk">${["低","中","高"].map(o => `<option ${o===d.risk?"selected":""}>${o}</option>`).join("")}</select>
+        </div>
+        <div class="field full"><label>标签 (用逗号分隔)</label><input id="f_tags" value="${escAttr((d.tags||[]).join(", "))}" /></div>
+        <div class="field full"><label>需求 & 偏好</label><textarea id="f_needs">${esc(d.needs||"")}</textarea></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>联系人 & 决策链</h3>
+      <div id="contactList">${(d.contacts||[]).map((ct,i) => contactSubForm(ct,i)).join("")}</div>
+      <button class="add-sub" onclick="addContact()">+ 添加联系人</button>
+    </div>
+
+    <div class="section">
+      <h3>业务 / 项目记录</h3>
+      <div id="recordList">${(d.records||[]).map((r,i) => recordSubForm(r,i)).join("")}</div>
+      <button class="add-sub" onclick="addRecord()">+ 添加业务记录</button>
+    </div>
+  `;
+}
+function ynField(key, label, value) {
+  const opts = ["", "是", "否"];
+  return `<div class="field"><label>${esc(label)}</label>
+    <select id="f_${key}">
+      ${opts.map(o => `<option value="${esc(o)}" ${o===value?"selected":""}>${o===""?"—":esc(o)}</option>`).join("")}
+    </select>
+  </div>`;
+}
+
+function contactSubForm(ct, i) {
+  return `
+    <div class="sub-form">
+      <div class="sub-form-head"><strong>联系人 #${i+1}</strong>
+        <button class="icon-btn" onclick="removeContact(${i})">删除</button>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label>姓名</label><input id="ct_name_${i}" value="${escAttr(ct.name)}" /></div>
+        <div class="field"><label>职位</label><input id="ct_title_${i}" value="${escAttr(ct.title)}" /></div>
+        <div class="field"><label>角色</label>
+          <select id="ct_role_${i}">
+            ${["决策者","影响者","把关者","使用者",""].map(o => `<option ${o===ct.role?"selected":""}>${o}</option>`).join("")}
+          </select>
+        </div>
+        <div class="field"><label>电话</label><input id="ct_phone_${i}" value="${escAttr(ct.phone)}" /></div>
+        <div class="field"><label>邮箱</label><input id="ct_email_${i}" value="${escAttr(ct.email)}" /></div>
+        <div class="field"><label>备注</label><input id="ct_notes_${i}" value="${escAttr(ct.notes)}" /></div>
+      </div>
+    </div>
+  `;
+}
+function recordSubForm(r, i) {
+  return `
+    <div class="sub-form">
+      <div class="sub-form-head"><strong>记录 #${i+1}</strong>
+        <button class="icon-btn" onclick="removeRecord(${i})">删除</button>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label>日期</label><input type="date" id="r_date_${i}" value="${escAttr(r.date)}" /></div>
+        <div class="field"><label>类型</label>
+          <select id="r_type_${i}">${["沟通","拜访","合作项目","订单",""].map(o => `<option ${o===r.type?"selected":""}>${o}</option>`).join("")}</select>
+        </div>
+        <div class="field"><label>阶段</label>
+          <select id="r_stage_${i}">${["线索","商机","进行中","已成交","已流失",""].map(o => `<option ${o===r.stage?"selected":""}>${o}</option>`).join("")}</select>
+        </div>
+        <div class="field full"><label>标题</label><input id="r_title_${i}" value="${escAttr(r.title)}" /></div>
+        <div class="field"><label>金额</label><input id="r_amount_${i}" value="${escAttr(r.amount)}" /></div>
+        <div class="field full"><label>备注</label><input id="r_notes_${i}" value="${escAttr(r.notes)}" /></div>
+      </div>
+    </div>
+  `;
+}
+function syncDraftFromForm() {
+  const d = editDraft;
+  d.name = val("f_name").trim();
+  d.short = val("f_short").trim();
+  d.industry = val("f_industry").trim();
+  d.scale = val("f_scale");
+  d.region = val("f_region").trim();
+  d.established = val("f_established").trim();
+  d.address = val("f_address").trim();
+  d.level = val("f_level");
+  d.risk = val("f_risk");
+  d.tags = val("f_tags").split(/[,,]/).map(s => s.trim()).filter(Boolean);
+  d.needs = val("f_needs");
+  // profile scoring
+  d.relationship = val("f_relationship").trim();
+  d.occupation = val("f_occupation").trim();
+  d.age = val("f_age").trim();
+  d.income = val("f_income").trim();
+  d.married = val("f_married");
+  d.child = val("f_child");
+  d.house = val("f_house");
+  d.dissatisfied = val("f_dissatisfied");
+  d.entrepreneurship = val("f_entrepreneurship");
+  d.coachable = val("f_coachable");
+  d.totalPoints = val("f_totalPoints").trim();
+  d.profileNotes = val("f_profileNotes");
+  d.contacts = (d.contacts||[]).map((_,i) => ({
+    name: val("ct_name_"+i), title: val("ct_title_"+i), role: val("ct_role_"+i),
+    phone: val("ct_phone_"+i), email: val("ct_email_"+i), notes: val("ct_notes_"+i)
+  }));
+  d.records = (d.records||[]).map((_,i) => ({
+    date: val("r_date_"+i), type: val("r_type_"+i), stage: val("r_stage_"+i),
+    title: val("r_title_"+i), amount: val("r_amount_"+i), notes: val("r_notes_"+i)
+  }));
+}
+function val(id){ const el = document.getElementById(id); return el ? el.value : ""; }
+
+function onAvatarPick(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith("image/")) { alert("请选择图片文件"); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    // Downscale via canvas to keep localStorage small (max 240px, JPEG ~0.85)
+    const img = new Image();
+    img.onload = () => {
+      const max = 240;
+      const scale = Math.min(1, max / Math.max(img.width, img.height));
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+      syncDraftFromForm();
+      editDraft.avatar = dataUrl;
+      renderEditForm();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function onAvatarUrl(url) {
+  const trimmed = (url || "").trim();
+  if (!trimmed) return;
+  // Only commit on blur / debounce a bit — store directly, lazy
+  editDraft.avatar = trimmed;
+  // Live preview without re-render: update the avatar box
+  const box = document.getElementById("avatarBox");
+  if (box) {
+    box.style.backgroundImage = `url('${trimmed}')`;
+    const span = box.querySelector("span:not(.overlay)");
+    if (span) span.style.display = "none";
+  }
+}
+function clearAvatar() {
+  syncDraftFromForm();
+  editDraft.avatar = "";
+  renderEditForm();
+}
+
+function addContact() {
+  syncDraftFromForm();
+  editDraft.contacts.push({ name:"", title:"", role:"", phone:"", email:"", notes:"" });
+  renderEditForm();
+}
+function removeContact(i) {
+  syncDraftFromForm();
+  editDraft.contacts.splice(i,1);
+  renderEditForm();
+}
+function addRecord() {
+  syncDraftFromForm();
+  editDraft.records.push({ date: todayStr(), type:"沟通", stage:"线索", title:"", amount:"", notes:"" });
+  renderEditForm();
+}
+function removeRecord(i) {
+  syncDraftFromForm();
+  editDraft.records.splice(i,1);
+  renderEditForm();
+}
+
+function saveEdit() {
+  syncDraftFromForm();
+  if (!editDraft.name) { alert("请填写客户全称"); return; }
+  editDraft.updatedAt = todayStr();
+  if (editingId) {
+    const idx = customers.findIndex(c => c.id === editingId);
+    if (idx >= 0) customers[idx] = editDraft;
+  } else {
+    customers.unshift(editDraft);
+  }
+  save();
+  closeEdit();
+  render();
+  toast(editingId ? "已更新" : "已新增");
+}
+
+// ============== Import / Export ==============
+function exportData() {
+  const blob = new Blob([JSON.stringify(customers, null, 2)], {type:"application/json"});
+  download(blob, "customer-archive-" + todayStr() + ".json");
+}
+function importData(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const arr = JSON.parse(ev.target.result);
+      if (!Array.isArray(arr)) throw new Error("格式错误");
+      if (!confirm("将合并 " + arr.length + " 条数据,是否继续? (按 ID 去重,新数据覆盖旧数据)")) return;
+      const map = new Map(customers.map(c => [c.id, c]));
+      arr.forEach(c => { if (!c.id) c.id = uid(); map.set(c.id, c); });
+      customers = Array.from(map.values());
+      save(); render(); toast("已导入 " + arr.length + " 条");
+    } catch(err) {
+      alert("导入失败: " + err.message);
+    }
+    e.target.value = "";
+  };
+  reader.readAsText(file);
+}
+function exportCSV() {
+  const cols = ["id","name","short","industry","scale","region","level","risk","owner","tags","needs","contacts_count","records_count","last_record","updatedAt"];
+  const rows = [cols.join(",")];
+  customers.forEach(c => {
+    const last = (c.records||[]).slice().sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0];
+    const row = [
+      c.id, c.name, c.short, c.industry, c.scale, c.region, c.level, c.risk, c.owner,
+      (c.tags||[]).join("/"),
+      (c.needs||"").replace(/\s+/g, " "),
+      (c.contacts||[]).length, (c.records||[]).length,
+      last ? (last.date + " " + last.title) : "",
+      c.updatedAt
+    ].map(v => `"${String(v||"").replace(/"/g,'""')}"`);
+    rows.push(row.join(","));
+  });
+  // BOM for Excel UTF-8
+  const blob = new Blob(["﻿" + rows.join("\n")], {type:"text/csv"});
+  download(blob, "customer-archive-" + todayStr() + ".csv");
+}
+function download(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+}
+function resetDemo() {
+  if (!confirm("将本地数据重置为示例数据?当前所有改动会丢失。")) return;
+  customers = JSON.parse(JSON.stringify(DEMO));
+  activeFilter = {type:"all", value:""};
+  save(); render(); toast("已重置");
+}
+
+// ============== Utils ==============
+function esc(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function escAttr(s) { return esc(s); }
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove("show"), 1800);
+}
+
+// kick off
+render();
+</script>
+</body>
+</html>

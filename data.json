@@ -1,0 +1,99 @@
+[
+  {
+    "id": "cmp2b827vnzv",
+    "name": "陈某1",
+    "short": "陈某",
+    "industry": "AI",
+    "scale": "大型",
+    "region": "Bay Area",
+    "website": "",
+    "address": "95051 ***",
+    "established": "2022",
+    "revenue": "",
+    "level": "B",
+    "risk": "低",
+    "tags": [
+      "求稳",
+      "顾家",
+      "一子一女",
+      "Hiking",
+      "炒股"
+    ],
+    "needs": "(已脱敏)",
+    "owner": "",
+    "avatar": "",
+    "relationship": "同事",
+    "occupation": "程序员",
+    "age": "42",
+    "married": "是",
+    "child": "是",
+    "house": "是",
+    "income": "高",
+    "dissatisfied": "是",
+    "entrepreneurship": "否",
+    "coachable": "是",
+    "totalPoints": "",
+    "profileNotes": "",
+    "contacts": [],
+    "records": [],
+    "createdAt": "2026-05-12",
+    "updatedAt": "2026-05-12"
+  },
+  {
+    "id": "cmp28vb8uw01",
+    "name": "A某2",
+    "short": "A某",
+    "industry": "AI, AV",
+    "scale": "大型",
+    "region": "Bay Area, CA",
+    "website": "",
+    "address": "https ***",
+    "established": "2020",
+    "revenue": "",
+    "level": "A",
+    "risk": "低",
+    "tags": [
+      "赛车",
+      "玩车",
+      "理性",
+      "务实"
+    ],
+    "needs": "",
+    "owner": "",
+    "avatar": "",
+    "relationship": "同事",
+    "occupation": "程序员",
+    "age": "29",
+    "married": "是",
+    "child": "否",
+    "house": "是",
+    "income": "高",
+    "dissatisfied": "否",
+    "entrepreneurship": "否",
+    "coachable": "是",
+    "totalPoints": "",
+    "profileNotes": "",
+    "contacts": [
+      {
+        "name": "方某1",
+        "title": "程序员",
+        "role": "决策者",
+        "phone": "",
+        "email": "",
+        "notes": "(已脱敏)"
+      }
+    ],
+    "records": [
+      {
+        "date": "2026-05-12",
+        "type": "沟通",
+        "title": "(已脱敏)",
+        "amount": "",
+        "stage": "商机",
+        "notes": ""
+      }
+    ],
+    "createdAt": "2026-05-12",
+    "updatedAt": "2026-05-12"
+  }
+]

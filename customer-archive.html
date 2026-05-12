@@ -142,6 +142,119 @@
   .btn.ghost-dark { background: transparent; color: #d0d5dd; border-color: rgba(255,255,255,.15); width: 100%; }
   .btn.ghost-dark:hover { background: rgba(255,255,255,.06); }
 
+  /* ===== View toggle ===== */
+  .view-toggle {
+    display: inline-flex;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .vt-btn {
+    border: 0; background: transparent;
+    padding: 8px 12px; font-size: 13px;
+    color: var(--muted); cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: inherit;
+    transition: background .15s, color .15s;
+  }
+  .vt-btn + .vt-btn { border-left: 1px solid var(--border); }
+  .vt-btn:hover { background: #f9fafb; color: var(--text); }
+  .vt-btn.active {
+    background: var(--accent);
+    color: #fff;
+  }
+  .vt-btn.active:hover { background: var(--accent-dark); color: #fff; }
+  .vt-icon { font-size: 14px; line-height: 1; }
+
+  /* ===== List view ===== */
+  .list {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .list-head, .list-row {
+    display: grid;
+    grid-template-columns: 48px 2fr 1.4fr 80px 90px 2fr 1.2fr;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+  }
+  .list-head {
+    background: #fafbfc;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+  }
+  .list-head .sortable {
+    cursor: pointer;
+    user-select: none;
+    display: inline-flex; align-items: center; gap: 4px;
+    transition: color .15s;
+  }
+  .list-head .sortable:hover { color: var(--text); }
+  .list-head .sortable.active { color: var(--accent-dark); }
+  .list-head .sortable .arrow {
+    font-size: 9px; opacity: .4;
+    transition: opacity .15s;
+  }
+  .list-head .sortable.active .arrow { opacity: 1; }
+  .list-row {
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background .12s;
+    font-size: 13px;
+  }
+  .list-row:last-child { border-bottom: 0; }
+  .list-row:hover { background: #f9fafb; }
+  .list-row .avatar {
+    width: 36px; height: 36px; font-size: 13px; border-radius: 8px;
+  }
+  .list-row .name-cell .name {
+    font-weight: 600; color: var(--text);
+  }
+  .list-row .name-cell .sub {
+    font-size: 11px; color: var(--muted); margin-top: 1px;
+  }
+  .list-row .industry-cell {
+    color: var(--text);
+  }
+  .list-row .industry-cell .region {
+    font-size: 11px; color: var(--muted);
+  }
+  .list-row .tags-cell {
+    display: flex; flex-wrap: wrap; gap: 4px; overflow: hidden;
+    max-height: 22px;
+  }
+  .list-row .tags-cell .tag {
+    font-size: 10px; padding: 2px 6px;
+  }
+  .list-row .last-cell {
+    font-size: 12px; color: var(--muted);
+  }
+  .list-row .last-cell strong { color: var(--text); font-weight: 500; }
+  /* compact level + score */
+  .list-row .badge {
+    position: static; align-self: center;
+    font-size: 10px; padding: 2px 7px;
+  }
+  .list-row .score-pill {
+    font-size: 10px; padding: 2px 6px;
+  }
+  @media (max-width: 900px) {
+    .list-head, .list-row {
+      grid-template-columns: 40px 1.5fr 70px 80px;
+    }
+    .list-head .col-industry, .list-row .industry-cell,
+    .list-head .col-tags, .list-row .tags-cell,
+    .list-head .col-last, .list-row .last-cell { display: none; }
+  }
+
   /* ===== Card grid ===== */
   .grid {
     display: grid;
@@ -521,11 +634,20 @@
         <input id="searchInput" type="text" placeholder="搜索客户名称、行业、标签、联系人…" oninput="render()" />
       </div>
       <div class="topbar-actions">
+        <div class="view-toggle" role="tablist" aria-label="视图切换">
+          <button class="vt-btn" data-view="card" onclick="setView('card')" title="卡片视图">
+            <span class="vt-icon">▦</span> 卡片
+          </button>
+          <button class="vt-btn" data-view="list" onclick="setView('list')" title="列表视图">
+            <span class="vt-icon">☰</span> 列表
+          </button>
+        </div>
         <button class="btn primary" onclick="openEditDrawer()">+ 新建客户</button>
       </div>
     </div>
 
     <div id="cardGrid" class="grid"></div>
+    <div id="listView" class="list" style="display:none"></div>
     <div id="emptyState" class="empty" style="display:none">
       <div class="icon">📋</div>
       <div>没有找到匹配的客户</div>
@@ -710,8 +832,12 @@ const DEMO = [
 // ============== State ==============
 const STORE_KEY = "cowork_customer_archive_v1";
 const FILTER_KEY = "cowork_customer_archive_filter_v1";
+const VIEW_KEY = "cowork_customer_archive_view_v1";
+const SORT_KEY = "cowork_customer_archive_sort_v1";
 let customers = load();
 let activeFilter = JSON.parse(localStorage.getItem(FILTER_KEY) || '{"type":"all","value":""}');
+let currentView = localStorage.getItem(VIEW_KEY) || "card";
+let currentSort = JSON.parse(localStorage.getItem(SORT_KEY) || '{"key":"","dir":"asc"}');
 let currentId = null;
 let editingId = null;
 let editDraft = null;
@@ -847,13 +973,130 @@ function render() {
   });
 
   const grid = document.getElementById("cardGrid");
+  const list = document.getElementById("listView");
   grid.innerHTML = "";
+  list.innerHTML = "";
+
+  // 视图切换显示
+  const isCard = currentView === "card";
+  grid.style.display = isCard ? "" : "none";
+  list.style.display = isCard ? "none" : "";
+
   if (filtered.length === 0) {
     document.getElementById("emptyState").style.display = "";
     return;
   }
   document.getElementById("emptyState").style.display = "none";
-  filtered.forEach(c => grid.appendChild(cardEl(c)));
+
+  if (isCard) {
+    filtered.forEach(c => grid.appendChild(cardEl(c)));
+  } else {
+    const sorted = applySorting(filtered);
+    list.innerHTML = listHeaderHtml() + sorted.map(c => listRowHtml(c)).join("");
+    list.querySelectorAll(".list-row").forEach(row => {
+      row.addEventListener("click", () => openDetail(row.dataset.id));
+    });
+    list.querySelectorAll(".sortable").forEach(h => {
+      h.addEventListener("click", () => toggleSort(h.dataset.sort));
+    });
+  }
+}
+
+// 排序辅助
+function sortValue(c, key) {
+  switch (key) {
+    case "name":     return (c.short || c.name || "").toLowerCase();
+    case "industry": return ((c.industry || "") + " " + (c.region || "")).toLowerCase();
+    case "level":    return c.level || "Z";   // A < B < C, 没有放最后
+    case "score":    return effectivePoints(c);
+    case "last": {
+      const last = (c.records||[]).slice().sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0];
+      return last ? last.date : "0000-00-00";  // 无活动排在最后(降序)/最前(升序)
+    }
+    default: return 0;
+  }
+}
+function applySorting(rows) {
+  if (!currentSort.key) return rows;
+  const k = currentSort.key, dir = currentSort.dir === "desc" ? -1 : 1;
+  return rows.slice().sort((a,b) => {
+    const va = sortValue(a, k), vb = sortValue(b, k);
+    if (typeof va === "number" && typeof vb === "number") return (va - vb) * dir;
+    return String(va).localeCompare(String(vb), "zh-Hans-CN") * dir;
+  });
+}
+function toggleSort(key) {
+  if (currentSort.key === key) {
+    if (currentSort.dir === "asc") currentSort.dir = "desc";
+    else { currentSort.key = ""; currentSort.dir = "asc"; }  // 第三次点击取消排序
+  } else {
+    currentSort.key = key;
+    currentSort.dir = "asc";
+  }
+  try { localStorage.setItem(SORT_KEY, JSON.stringify(currentSort)); } catch(e) {}
+  render();
+}
+function sortHead(key, label) {
+  const active = currentSort.key === key;
+  const arrow = !active ? "↕" : (currentSort.dir === "asc" ? "↑" : "↓");
+  return `<span class="sortable ${active?'active':''}" data-sort="${esc(key)}">${esc(label)} <span class="arrow">${arrow}</span></span>`;
+}
+
+function listHeaderHtml() {
+  return `
+    <div class="list-head">
+      <div></div>
+      <div>${sortHead("name", "客户")}</div>
+      <div class="col-industry">${sortHead("industry", "行业 / 地区")}</div>
+      <div>${sortHead("level", "等级")}</div>
+      <div>${sortHead("score", "评分")}</div>
+      <div class="col-tags">标签</div>
+      <div class="col-last">${sortHead("last", "最近活动")}</div>
+    </div>
+  `;
+}
+
+function listRowHtml(c) {
+  const initial = (c.short || c.name || "?").slice(0,2);
+  const avatarHtml = c.avatar
+    ? `<div class="avatar has-img" style="--avatar-url:url('${escAttr(c.avatar)}')"><span>${esc(initial)}</span></div>`
+    : `<div class="avatar"><span>${esc(initial)}</span></div>`;
+  const tagsHtml = (c.tags || []).slice(0,3).map(t => `<span class="tag">${esc(t)}</span>`).join("");
+  const extraTags = (c.tags||[]).length > 3 ? `<span class="tag gray">+${c.tags.length - 3}</span>` : "";
+  const lastRec = (c.records || []).slice().sort((a,b) => (b.date||"").localeCompare(a.date||""))[0];
+  const lastText = lastRec ? `${esc(lastRec.date)} · ${esc(lastRec.title)}` : '<span style="color:var(--muted)">暂无活动</span>';
+  const score = effectivePoints(c);
+  const hasScoring = c.married || c.child || c.house || c.dissatisfied ||
+    c.entrepreneurship || c.coachable || c.totalPoints;
+  const scorePill = hasScoring
+    ? `<span class="score-pill ${score >= 4 ? 'hot' : ''}" title="评估总分">⭐ <span class="num">${score}</span>/6</span>`
+    : '<span style="color:var(--muted);font-size:11px;">—</span>';
+  return `
+    <div class="list-row" data-id="${esc(c.id)}">
+      ${avatarHtml}
+      <div class="name-cell">
+        <div class="name">${esc(c.short || c.name)}</div>
+        ${c.name && c.name !== c.short ? `<div class="sub">${esc(c.name)}</div>` : ""}
+      </div>
+      <div class="industry-cell">
+        ${esc(c.industry || "—")}
+        ${c.region ? `<div class="region">${esc(c.region)}</div>` : ""}
+      </div>
+      <div><span class="badge ${c.level||'C'}">${c.level||'C'} 级</span></div>
+      <div>${scorePill}</div>
+      <div class="tags-cell">${tagsHtml}${extraTags}</div>
+      <div class="last-cell">${lastText}</div>
+    </div>
+  `;
+}
+
+function setView(view) {
+  currentView = view;
+  try { localStorage.setItem(VIEW_KEY, view); } catch(e) {}
+  document.querySelectorAll(".vt-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.view === view);
+  });
+  render();
 }
 
 function cardEl(c) {
@@ -1483,6 +1726,10 @@ function toast(msg) {
 }
 
 // kick off
+// 同步视图切换按钮的高亮
+document.querySelectorAll(".vt-btn").forEach(b => {
+  b.classList.toggle("active", b.dataset.view === currentView);
+});
 render();
 updateBackupStatus();
 setInterval(updateBackupStatus, 60000); // 每分钟刷新一下相对时间
